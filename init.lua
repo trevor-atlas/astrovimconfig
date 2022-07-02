@@ -204,6 +204,10 @@ local config = {
                 border = 'single'
             })
         end,
+            telescope = function(config)
+      config.defaults.file_ignore_patterns = { "node%_modules/.*" }
+      return config
+    end
         -- All other entries override the setup() call for default plugins
         ["null-ls"] = function(config)
             local null_ls = require "null-ls"
