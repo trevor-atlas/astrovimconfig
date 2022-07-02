@@ -23,10 +23,16 @@ local config = {
     -- set vim options here (vim.<first_key>.<second_key> =  value)
     options = {
         opt = {
-            relativenumber = true -- sets vim.opt.relativenumber
+            relativenumber = true, -- sets vim.opt.relativenumber
         },
         g = {
-            mapleader = " " -- sets vim.g.mapleader
+            mapleader = " ", -- sets vim.g.mapleader
+            neovide_refresh_rate = 120,
+            neovide_cursor_vfx_mode = "sonicboom",
+            
+        },
+        o = {
+            guifont = "JetBrainsMono Nerd Font:h18",
         }
     },
 
@@ -101,30 +107,28 @@ local config = {
             end
         }},
 
-        lspconfig = function(config)
+        lspconfig = function(configuration)
             local util = require("lspconfig/util")
             local Job = require("plenary.job")
 
-            function getIsHubspotMachine()
+            local function getIsHubspotMachine()
                 local result = ""
-                local testing = {}
                 Job:new({
                     command = "ls",
                     args = {vim.env.HOME .. '/.isHubspotMachine'},
-                    on_exit = function(j, return_val)
+                    on_exit = function(_, return_val)
                         result = return_val
-                        testing = j
                     end
                 }):sync()
 
-                return return_val == 0
+                return result == 0
             end
 
-            function getLogPath()
+            local function getLogPath()
                 return vim.lsp.get_log_path()
             end
 
-            function getTsserverPath()
+            local function getTsserverPath()
                 local result = "/lib/tsserver.js"
                 Job:new({
                     command = "bpx",
@@ -141,7 +145,7 @@ local config = {
             local capabilities = vim.lsp.protocol.make_client_capabilities()
             capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
 
-            local customPublishDiagnosticFunction = function(_, result, ctx, config)
+            local function customPublishDiagnosticFunction(_, result, ctx, conf)
                 local filter = function(fun, t)
                     local res = {}
                     for _, item in ipairs(t) do
@@ -162,20 +166,19 @@ local config = {
 
                 result.diagnostics = filtered_diagnostics
 
-                return vim.lsp.diagnostic.on_publish_diagnostics(_, result, ctx, config)
+                return vim.lsp.diagnostic.on_publish_diagnostics(_, result, ctx, conf)
             end
-            local isHubspotMachine = getIsHubspotMachine()
 
-            if isHubspotMachine then
-
+            if getIsHubspotMachine() then
                 require("lspconfig").tsserver.setup({
-                    cmd = {"typescript-language-server", "--log-level", -- A number indicating the log level (4 = log, 3 = info, 2 = warn, 1 = error). Defaults to `2`.
-                           "2", "--tsserver-log-verbosity", "terse", -- Specify tsserver log verbosity (off, terse, normal, verbose). Defaults to `normal`. example: --tsserver-log-verbosity=verbose
-                           "--tsserver-log-file", getLogPath(), "--tsserver-path", getTsserverPath(), "--stdio"},
+                    cmd = {
+                        "typescript-language-server", "--log-level", -- A number indicating the log level (4 = log, 3 = info, 2 = warn, 1 = error). Defaults to `2`.
+                       "2", "--tsserver-log-verbosity", "terse", -- Specify tsserver log verbosity (off, terse, normal, verbose). Defaults to `normal`. example: --tsserver-log-verbosity=verbose
+                       "--tsserver-log-file", getLogPath(), "--tsserver-path", getTsserverPath(), "--stdio"
+                   },
                     on_attach = on_attach,
                     root_dir = util.root_pattern(".git"),
-                    filetypes = {"javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact",
-                                 "typescript.tsx"},
+                    filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
                     handlers = {
                         ["textDocument/publishDiagnostics"] = vim.lsp.with(customPublishDiagnosticFunction, {
                             -- Disable virtual_text
@@ -188,6 +191,7 @@ local config = {
             else
                 require("lspconfig").tsserver.setup({})
             end
+
             -- npm install -g graphql-language-service-cli
             require'lspconfig'.graphql.setup {}
 
@@ -204,9 +208,9 @@ local config = {
                 border = 'single'
             })
         end,
-            telescope = function(config)
-      config.defaults.file_ignore_patterns = { "node%_modules/.*" }
-      return config
+        telescope = function(config)
+          config.defaults.file_ignore_patterns = { "node%_modules/.*" }
+          return config
     end,
         -- All other entries override the setup() call for default plugins
         ["null-ls"] = function(config)
@@ -341,6 +345,7 @@ local config = {
            ["<C-k>"] = {"<C-W><C-K>", desc="jump split"},
            ["<C-l>"] = {"<C-W><C-L>", desc="jump split"},
            ["<C-h>"] = {"<C-W><C-H>", desc="jump split"},
+           ["<C-w>"] = {":bd<cr>", desc="close buffer"},
 
         },
         t = {
