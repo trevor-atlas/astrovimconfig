@@ -29,11 +29,34 @@ local config = {
             mapleader = " ", -- sets vim.g.mapleader
             neovide_refresh_rate = 120,
             neovide_cursor_vfx_mode = "sonicboom",
-            
         },
         o = {
             guifont = "JetBrainsMono Nerd Font:h18",
         }
+    },
+    header = {
+        "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣀⣀⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
+        "⠀⠀⠀⠀⠀⠀⠀⠀⢀⣤⡴⠶⠖⠛⠷⠶⣶⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣴⡾⠟⠛⠉⠉⠉⠉⠙⠛⠶⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀",
+        "⠀⠀⠀⠀⠀⠀⢀⡾⠋⠀⠀⠀⠀⠀⠀⠀⠀⠈⠛⢷⣄⠀⠀⠀⠀⠀⢀⣼⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢳⡄⠀⠀⠀⠀⠀⠀⠀",
+        "⠀⠀⠀⠀⠀⢀⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢻⣧⠀⠀⠀⢀⣾⠏⠀⠀⣀⣀⣀⠀⠀⠀⠀⠀⣀⣀⣀⠀⢹⡄⠀⠀⠀⠀⠀⠀",
+        "⠀⠀⠀⠀⠀⣼⠀⣰⣿⣿⠻⢆⠀⠀⠀⣠⣶⠦⣄⠀⠀⢻⡇⠀⠀⢸⣿⠀⠀⠞⢉⣿⣿⣷⠀⠀⠀⠼⠋⣽⣿⣿⡄⣧⠀⠀⠀⠀⠀⠀",
+        "⠀⠀⠀⠀⠀⡇⠀⠻⠿⠟⠀⠀⠀⠀⢸⣿⣿⡇⠈⠂⠀⢸⣿⠀⠀⢸⣧⠀⠀⠀⠀⠻⠿⠟⠀⠀⠀⠀⠀⠙⠿⠿⠁⢸⡀⠀⠀⠀⠀⠀",
+        "⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⣉⠥⢄⡀⠀⠀⢸⡿⠀⠀⢸⣿⠀⢠⠒⠉⢉⠆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⣹⠃⠀⠀⠀",
+        "⠀⢀⣠⠴⠚⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⠤⠤⠜⠀⢀⣾⠇⠀⠀⠀⢿⣇⠀⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⠃⠀⠀⠀⠀",
+        "⠀⠀⠉⠳⢤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣾⠋⠀⠀⠀⠀⠈⠻⣧⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⠟⠁⠀⠀⠀⠀⠀",
+        "⠀⠀⠀⠀⠀⠉⠓⠶⣤⣀⡀⠀⠀⠀⠀⠀⣀⣤⡾⠟⠁⠀⠀⠀⠀⠀⠀⠀⠙⠻⣶⣤⣀⣀⣀⣀⣀⣀⣠⣴⠾⠋⠁⠀⠀⠀⠀⠀⠀⠀",
+        "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠙⠛⠛⠛⠛⠛⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⠛⠛⠉⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
+        "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
+        "⠀⠀⠀⠀⠀⠀⠀⢀⣠⡶⠟⠛⠉⠉⠉⠙⠛⠷⣦⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⠶⠾⠛⠛⠛⠷⢶⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀",
+        "⠀⠀⠀⠀⠀⠀⣰⠟⠉⣀⣀⠀⠀⠀⠀⠀⠀⣀⣀⠙⢷⡄⠀⠀⠀⠀⠀⠀⠀⣠⣾⣋⣀⠀⠀⠀⠀⠀⠀⠀⢈⣙⣷⣄⠀⠀⠀⠀⠀⠀",
+        "⠀⠀⠀⠀⠀⣼⠋⠠⠞⢻⣿⣿⣦⠀⠀⣰⣿⣿⡟⠻⠄⢻⡆⠀⠀⠀⠀⢀⣾⠋⠀⠀⠈⠙⠢⠀⠀⠀⠠⠚⠉⠁⠀⠹⣧⠀⠀⠀⠀⠀",
+        "⠀⠀⠀⠀⢸⡇⠀⠀⠀⠸⣿⣿⠟⠀⠀⠻⣿⣿⠇⠀⠀⠀⣿⡀⠀⠀⠀⣼⢫⣁⣀⡹⠀⠀⠀⠀⠀⠀⠀⠀⠐⣍⣀⣈⠿⣇⠀⠀⠀⠀",
+        "⠀⠀⠀⠀⣿⠀⢀⠤⠤⢄⠀⠀⠀⠀⠀⠀⠀⠀⡠⠔⠂⢄⢸⡇⠀⠀⠀⣿⢤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⠴⣿⠀⠀⠀⠀",
+        "⠀⠀⠀⠀⢿⡀⠘⠢⠤⠔⠁⠀⠀⠀⠀⢀⠀⠀⠑⠒⠒⠊⣸⠇⠀⠀⠀⣿⠀⢸⠙⠒⠦⡤⣀⣀⣀⣀⡠⠤⢶⠊⠉⢸⠀⣿⠀⠀⠀⠀",
+        "⠀⠀⠀⠀⠸⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢧⡀⠀⠀⠀⢠⡿⠀⠀⠀⠀⢿⡄⢸⠀⠀⠀⡇⠀⠀⠀⡇⠀⠀⢸⠀⠀⢸⢰⡟⠀⠀⠀⠀",
+        "⠀⠀⠀⠀⠀⠙⣷⡀⠀⠀⠀⠀⠀⠀⠠⠖⠚⠃⠀⠀⣠⡟⠁⠀⠀⠀⠀⠈⢷⣼⠀⠀⠀⡇⠀⠀⠀⡇⠀⠀⢸⠀⠀⣸⡟⠀⠀⠀⠀⠀",
+        "⠀⠀⠀⠀⠀⠀⠈⠛⢷⣤⣀⠀⠀⠀⠀⠀⢀⣠⣴⠞⠋⠀⠀⠀⠀⠀⠀⠀⠀⠙⢷⣄⡀⡇⠀⠀⠀⡇⠀⠀⢸⣠⡾⠋⠀⠀⠀⠀⠀⠀",
+        "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⠛⠛⠛⠛⠋⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠳⠶⠶⠶⠷⠶⠟⠛⠉⠀⠀⠀⠀⠀⠀⠀⠀",
     },
 
     -- Default theme configuration
@@ -331,34 +354,49 @@ local config = {
 
     mappings = {
         -- first key is the mode
+        --
+        i = {
+            -- ["<C-s>"] = { "<esc>:w!<cr>", desc = "Save File" },
+            -- ["<C-q>"] = {"<esc>:q<CR>", desc = "ctrl-q quit"},
+            ["<C-j>"] = {"<esc><C-W><C-J>", desc="jump split"},
+            ["<C-k>"] = {"<esc><C-W><C-K>", desc="jump split"},
+            ["<C-l>"] = {"<esc><C-W><C-L>", desc="jump split"},
+            ["<C-h>"] = {"<esc><C-W><C-H>", desc="jump split"},
+            ["<C-a>"] = {"<esc>ggVG", desc="highlight everything"},
+            ["<C-w>"] = {"<esc>:bdelete<CR>", desc="close buffer"},
+            ["<C-t>"] = {"<esc>:tabnew<CR>", desc="create buffer"},
+        },
         n = {
             -- second key is the lefthand side of the map
-            ["<C-s>"] = { ":w!<cr>", desc = "Save File" },
-            ["<C-q>"] = {":q<CR>", desc = "ctrl-q quit"},
-            ["H"] = {"^", desc="jump to line start"},
-            ["L"] = {"$", desc="jump to line end"},
-            ["<Leader>j"] = {":bn<cr>", desc="next buffer"},
-            ["<Leader>k"] = {":bp<cr>", desc="prev buffer"},
+            -- ["<C-s>"] = { ":w!<cr>", desc = "Save File" },
+            -- ["<C-q>"] = {":q<CR>", desc = "ctrl-q quit"},
+            ["<S-h>"] = {"^", desc="jump to line start"},
+            ["<S-l>"] = {"$", desc="jump to line end"},
+            ["<Leader>j"] = {":bn<CR>", desc="next buffer"},
+            ["<Leader>k"] = {":bp<CR>", desc="prev buffer"},
             ["<esc>"] = {":noh<CR><esc>", desc="clear highlight with esc"},
             ["<esc>^["] = {"<esc>^[", desc="clear highlight with esc"},
-           ["<C-j>"] = {"<C-W><C-J>", desc="jump split"},
-           ["<C-k>"] = {"<C-W><C-K>", desc="jump split"},
-           ["<C-l>"] = {"<C-W><C-L>", desc="jump split"},
-           ["<C-h>"] = {"<C-W><C-H>", desc="jump split"},
-           ["<C-w>"] = {":bd<cr>", desc="close buffer"},
+            ["<C-j>"] = {"<C-W><C-J>", desc="jump split"},
+            ["<C-k>"] = {"<C-W><C-K>", desc="jump split"},
+            ["<C-l>"] = {"<C-W><C-L>", desc="jump split"},
+            ["<C-h>"] = {"<C-W><C-H>", desc="jump split"},
+            ["<C-a>"] = {"ggVG", desc="highlight everything"},
 
+            ["<C-t>"] = {":tabnew<CR>", desc="create buffer"},
+            ["<C-w>"] = {":bdelete<CR>", desc="close buffer"},
+            ["n"] = {"nzzzv", desc="centered 'next' when searching"},
+		    ["N"] = {"Nzzzv", desc="centered 'next' when searching"},
         },
         t = {
             -- setting a mapping to false will disable it
             -- ["<esc>"] = false,
         },
         v = {
-            ["H"] = {"^", desc="jump to line start"},
-            ["L"] = {"$", desc="jump to line end"},
-
+            ["<S-h>"] = {"^", desc="jump to line start"},
+            ["<S-l>"] = {"$", desc="jump to line end"},
+		    ["<S-j>"] = {":m '>+1<CR>gv=gv", desc="Move lines around"},
+		    ["<S-k>"] = {":m '<-2<CR>gv=gv", desc="Move lines around"},
         }
-
-
     },
 
     -- This function is run last
