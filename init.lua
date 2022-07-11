@@ -18,17 +18,22 @@ local config = {
     },
 
     -- Set colorscheme
-    colorscheme = "default_theme",
+    colorscheme = "doom-one",-- "default_theme",
+
 
     -- set vim options here (vim.<first_key>.<second_key> =  value)
     options = {
         opt = {
             relativenumber = true, -- sets vim.opt.relativenumber
+            scrolloff = 999,
+            clipboard = "unnamedplus", -- copy/paste to system clipboard
+            swapfile = false,
         },
         g = {
             mapleader = " ", -- sets vim.g.mapleader
             neovide_refresh_rate = 120,
             neovide_cursor_vfx_mode = "sonicboom",
+            doom_one_terminal_colors = true,
         },
         o = {
             guifont = "JetBrainsMono Nerd Font:h18",
@@ -120,32 +125,42 @@ local config = {
         --   end,
         -- },
 
-        {'tpope/vim-surround'},
-        {'christoomey/vim-tmux-navigator'},
-        {'nvim-lua/plenary.nvim'}, {"bobrown101/plugin-utils.nvim"}, {
+
+        { "romgrk/doom-one.vim" }, -- colorscheme
+        { "phaazon/hop.nvim", -- autojump
+          branch = "v2", -- optional but strongly recommended
+          config = function()
+            -- you can configure Hop the way you like here; see :h hop-config
+            require("hop").setup({ keys = "etovxqpdygfblzhckisuran" })
+          end
+        },
+        { "kylechui/nvim-surround",
+            config = function()
+                require("nvim-surround").setup({})-- Configuration here, or leave empty to use defaults
+            end
+        },
+        { "christoomey/vim-tmux-navigator" },
+        { "nvim-lua/plenary.nvim" },
+        { "bobrown101/plugin-utils.nvim" }, {
             "bobrown101/asset-bender.nvim",
             requires = {"bobrown101/plugin-utils.nvim"},
             config = function()
                 require("asset-bender").setup({})
             end
         }},
-
+        ["neo-tree"] = function (configuration)
+            configuration.window.position = "right" 
+            configuration.filesystem.filtered_items.hide_dotfiles = false
+            return configuration
+        end,
+        bufferline = function(configuration)
+            configuration.options.separator_style = "slant"
+            return configuration
+        end,
         lspconfig = function(configuration)
             local util = require("lspconfig/util")
             local Job = require("plenary.job")
 
-            local function getIsHubspotMachine()
-                local result = ""
-                Job:new({
-                    command = "ls",
-                    args = {vim.env.HOME .. '/.isHubspotMachine'},
-                    on_exit = function(_, return_val)
-                        result = return_val
-                    end
-                }):sync()
-
-                return result == 0
-            end
 
             local function getLogPath()
                 return vim.lsp.get_log_path()
@@ -164,9 +179,19 @@ local config = {
 
                 return result
             end
-            -- The nvim-cmp almost supports LSP's capabilities so You should advertise it to LSP servers..
-            local capabilities = vim.lsp.protocol.make_client_capabilities()
-            capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
+
+            function getIsHubspotMachine()
+                local result = ""
+                Job:new({
+                    command = "ls",
+                    args = {vim.env.HOME .. "/.isHubspotMachine"},
+                    on_exit = function(_, return_val)
+                        result = return_val
+                    end
+                }):sync()
+
+                return result == 0
+            end
 
             local function customPublishDiagnosticFunction(_, result, ctx, conf)
                 local filter = function(fun, t)
@@ -192,13 +217,21 @@ local config = {
                 return vim.lsp.diagnostic.on_publish_diagnostics(_, result, ctx, conf)
             end
 
+            -- The nvim-cmp almost supports LSP's capabilities so You should advertise it to LSP servers..
+            local capabilities = vim.lsp.protocol.make_client_capabilities()
+            capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
+            local on_attach = function(client, bufnr) end
+            local lsp_flags = { debounce_text_changes = 500 }
+
             if getIsHubspotMachine() then
                 require("lspconfig").tsserver.setup({
+                    flags = lsp_flags,
                     cmd = {
                         "typescript-language-server", "--log-level", -- A number indicating the log level (4 = log, 3 = info, 2 = warn, 1 = error). Defaults to `2`.
                        "2", "--tsserver-log-verbosity", "terse", -- Specify tsserver log verbosity (off, terse, normal, verbose). Defaults to `normal`. example: --tsserver-log-verbosity=verbose
                        "--tsserver-log-file", getLogPath(), "--tsserver-path", getTsserverPath(), "--stdio"
                    },
+                    init_options = { hostInfo = "neovim" },
                     on_attach = on_attach,
                     root_dir = util.root_pattern(".git"),
                     filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
@@ -209,32 +242,50 @@ local config = {
                         })
                     },
                     capabilities = capabilities
-
                 })
             else
-                require("lspconfig").tsserver.setup({})
+                require("lspconfig").tsserver.setup({
+                    root_dir = util.root_pattern(".git"),
+                    init_options = { hostInfo = "neovim" },
+                    flags = lsp_flags,
+                    on_attach = on_attach,
+                    capabilities = capabilities,
+                    filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
+                })
             end
 
             -- npm install -g graphql-language-service-cli
-            require'lspconfig'.graphql.setup {}
+            require("lspconfig").graphql.setup({
+                flags = lsp_flags,
+                on_attach = on_attach,
+                capabilities = capabilities
+            })
 
             -- yarn global add yaml-language-server
-            require'lspconfig'.yamlls.setup {}
-            require("lspkind").init({})
+            require("lspconfig").yamlls.setup({
+                flags = lsp_flags,
+                on_attach = on_attach,
+                capabilities = capabilities
+            })
+            require("lspkind").init({
+                flags = lsp_flags,
+                on_attach = on_attach,
+                capabilities = capabilities
+            })
 
-            vim.lsp.handlers['textDocument/signatureHelp'] =
+            vim.lsp.handlers["textDocument/signatureHelp"] =
                 vim.lsp.with(vim.lsp.handlers.signature_help, {
-                    border = 'single'
+                    border = "single"
                 })
 
-            vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {
-                border = 'single'
+            vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
+                border = "single"
             })
         end,
         telescope = function(config)
           config.defaults.file_ignore_patterns = { "node%_modules/.*" }
           return config
-    end,
+        end,
         -- All other entries override the setup() call for default plugins
         ["null-ls"] = function(config)
             local null_ls = require "null-ls"
@@ -245,6 +296,7 @@ local config = {
             null_ls.builtins.formatting.rufo, -- Set a linter
             null_ls.builtins.diagnostics.rubocop}
             -- set up null-ls's on_attach function
+            local old_on_attach = config.on_attach;
             config.on_attach = function(client)
                 -- NOTE: You can remove this on attach function to disable format on save
                 if client.resolved_capabilities.document_formatting then
@@ -254,14 +306,17 @@ local config = {
                         callback = vim.lsp.buf.formatting_sync
                     })
                 end
+                old_on_attach(client)
             end
             return config -- return final config table
         end,
         treesitter = {
-            ensure_installed = {"lua"}
+            ensure_installed = "all",
+            ignore_install = {"phpdoc"},
         },
         ["nvim-lsp-installer"] = {
-            ensure_installed = {"sumneko_lua"}
+            ensure_installed = "all", --{"sumneko_lua"}
+            ignore_install = {"phpdoc"},
         },
         packer = {
             compile_path = vim.fn.stdpath "data" .. "/packer_compiled.lua"
@@ -353,27 +408,18 @@ local config = {
     },
 
     mappings = {
+
         -- first key is the mode
         --
-        i = {
-            -- ["<C-s>"] = { "<esc>:w!<cr>", desc = "Save File" },
-            -- ["<C-q>"] = {"<esc>:q<CR>", desc = "ctrl-q quit"},
-            ["<C-j>"] = {"<esc><C-W><C-J>", desc="jump split"},
-            ["<C-k>"] = {"<esc><C-W><C-K>", desc="jump split"},
-            ["<C-l>"] = {"<esc><C-W><C-L>", desc="jump split"},
-            ["<C-h>"] = {"<esc><C-W><C-H>", desc="jump split"},
-            ["<C-a>"] = {"<esc>ggVG", desc="highlight everything"},
-            ["<C-w>"] = {"<esc>:bdelete<CR>", desc="close buffer"},
-            ["<C-t>"] = {"<esc>:tabnew<CR>", desc="create buffer"},
-        },
+        i = { },
         n = {
             -- second key is the lefthand side of the map
             -- ["<C-s>"] = { ":w!<cr>", desc = "Save File" },
             -- ["<C-q>"] = {":q<CR>", desc = "ctrl-q quit"},
             ["<S-h>"] = {"^", desc="jump to line start"},
             ["<S-l>"] = {"$", desc="jump to line end"},
-            ["<Leader>j"] = {":bn<CR>", desc="next buffer"},
-            ["<Leader>k"] = {":bp<CR>", desc="prev buffer"},
+            ["<Leader>k"] = {":bn<CR>", desc="next buffer"},
+            ["<Leader>j"] = {":bp<CR>", desc="prev buffer"},
             ["<esc>"] = {":noh<CR><esc>", desc="clear highlight with esc"},
             ["<esc>^["] = {"<esc>^[", desc="clear highlight with esc"},
             ["<C-j>"] = {"<C-W><C-J>", desc="jump split"},
@@ -386,6 +432,9 @@ local config = {
             ["<C-w>"] = {":bdelete<CR>", desc="close buffer"},
             ["n"] = {"nzzzv", desc="centered 'next' when searching"},
 		    ["N"] = {"Nzzzv", desc="centered 'next' when searching"},
+            ["<Leader>bb"] = {"<cmd>lua require('telescope.builtin').buffers()<CR>", desc="search buffers"},
+            -- place this in one of your configuration file(s)
+            ["t"] = {":HopWord<cr>", desc = "jump to a character"},
         },
         t = {
             -- setting a mapping to false will disable it
@@ -414,6 +463,14 @@ local config = {
             command = "source <afile> | PackerSync"
         })
 
+        local api = vim.api
+
+        -- Highlight on yank
+        local yankGrp = api.nvim_create_augroup("YankHighlight", { clear = true })
+        api.nvim_create_autocmd("TextYankPost", {
+          command = "silent! lua vim.highlight.on_yank()",
+          group = yankGrp,
+        })
         -- Set up custom filetypes
         -- vim.filetype.add {
         --   extension = {
