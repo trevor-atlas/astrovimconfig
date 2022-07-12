@@ -126,6 +126,160 @@ local config = {
         -- },
 
 
+
+
+        { "mhartington/formatter.nvim",
+            config = function()
+
+            local path_sep = vim.loop.os_uname().sysname == "Windows" and "\\" or "/"
+            local function path_join(...)
+                return table.concat(vim.tbl_flatten {...}, path_sep)
+            end
+
+            local get_current_root_dir = function()
+
+                local bufnr = vim.api.nvim_get_current_buf()
+
+                -- Some path manipulation utilities
+                local function is_dir(filename)
+                    local stat = vim.loop.fs_stat(filename)
+                    return stat and stat.type == 'directory' or false
+                end
+
+                -- Asumes filepath is a file.
+                local function dirname(filepath)
+                    local is_changed = false
+                    local result = filepath:gsub(path_sep .. "([^" .. path_sep .. "]+)$",
+                                                 function()
+                        is_changed = true
+                        return ""
+                    end)
+                    return result, is_changed
+                end
+
+                -- Ascend the buffer's path until we find the rootdir.
+                -- is_root_path is a function which returns bool
+                local function buffer_find_root_dir(bufnr, is_root_path)
+                    local bufname = vim.api.nvim_buf_get_name(bufnr)
+                    if vim.fn.filereadable(bufname) == 0 then return nil end
+                    local dir = bufname
+                    -- Just in case our algo is buggy, don't infinite loop.
+                    for _ = 1, 100 do
+                        local did_change
+                        dir, did_change = dirname(dir)
+
+                        if is_root_path(dir, bufname) then return dir, bufname end
+                        -- If we can't ascend further, then stop looking.
+                        if not did_change then return nil end
+                    end
+                end
+
+                local root_dir = buffer_find_root_dir(bufnr, function(dir)
+                    return is_dir(path_join(dir, '.git'))
+                end)
+                return root_dir
+            end
+
+            require('formatter').setup({
+                logging = false,
+                filetype = {
+                    javascript = {
+                        -- prettier
+                        function()
+                            local rootDir = get_current_root_dir()
+                            local exe_path = path_join(rootDir, 'node_modules', 'prettier',
+                                                       'bin-prettier.js')
+                            local config_path = path_join(rootDir, 'prettier.config.js')
+                            return {
+                                exe = exe_path,
+                                args = {
+                                    "--stdin-filepath", vim.api.nvim_buf_get_name(0),
+                                    '--config', config_path
+                                },
+                                stdin = true
+                            }
+                        end
+                    },
+
+                    javascriptreact = {
+                        -- prettier
+                        function()
+                            return {
+                                exe = "prettier",
+                                args = {
+                                    "--stdin-filepath", vim.api.nvim_buf_get_name(0),
+                                    '--config ~/prettier.config.js'
+                                },
+                                stdin = true
+                            }
+                        end
+                    },
+
+                    typescript = {
+                        -- prettier
+                        function()
+                            return {
+                                exe = "prettier",
+                                args = {
+                                    "--stdin-filepath", vim.api.nvim_buf_get_name(0),
+                                    '--config ~/prettier.config.js'
+                                },
+                                stdin = true
+                            }
+                        end
+                    },
+
+                    typescriptreact = {
+                        -- prettier
+                        function()
+                            return {
+                                exe = "prettier",
+                                args = {
+                                    "--stdin-filepath", vim.api.nvim_buf_get_name(0),
+                                    '--config ~/prettier.config.js'
+                                },
+                                stdin = true
+                            }
+                        end
+                    },
+
+                    mdx = {
+                        -- prettier
+                        function()
+                            return {
+                                exe = "prettier",
+                                args = {
+                                    "--stdin-filepath", vim.api.nvim_buf_get_name(0),
+                                    '--config ~/prettier.config.js'
+                                },
+                                stdin = true
+                            }
+                        end
+                    },
+
+                    -- https://github.com/luarocks/luarocks/wiki/Installation-instructions-for-Unix
+                    -- luarocks install --server=https://luarocks.org/dev luaformatter
+                    lua = {
+                        function()
+                            return {
+                                exe = "lua-format",
+                                args = {vim.api.nvim_buf_get_name(0)},
+                                stdin = true
+                            }
+                        end
+                    }
+                }
+            })
+
+            vim.api.nvim_exec([[
+            au! BufRead,BufNewFile *.mdx setfiletype mdx
+            augroup FormatAutogroup
+              autocmd!
+              autocmd BufWritePost *.js,*.ts,*.tsx,*.lua,*.mdx FormatWrite
+            augroup END
+            ]], true)
+        end
+        },
         { "romgrk/doom-one.vim" }, -- colorscheme
         { "phaazon/hop.nvim", -- autojump
           branch = "v2", -- optional but strongly recommended
@@ -140,16 +294,26 @@ local config = {
             end
         },
         { "christoomey/vim-tmux-navigator" },
-        { "nvim-lua/plenary.nvim" },
-        { "bobrown101/plugin-utils.nvim" }, {
-            "bobrown101/asset-bender.nvim",
+        -- { "nvim-lua/plenary.nvim" },
+        { "bobrown101/plugin-utils.nvim" },
+        { "bobrown101/asset-bender.nvim",
             requires = {"bobrown101/plugin-utils.nvim"},
             config = function()
                 require("asset-bender").setup({})
             end
-        }},
+        },
+        { 'bobrown101/nvim_cmp_hs_translation_source',
+            config = function()
+                require('nvim_cmp_hs_translation_source').setup()
+            end
+        },
+        { "bobrown101/hubspot-js-utils.nvim",
+            requires = { "bobrown101/plugin-utils.nvim" },
+            config = function() require("hubspot-js-utils").setup({}) end
+        },
+    },
         ["neo-tree"] = function (configuration)
-            configuration.window.position = "right" 
+            configuration.window.position = "right"
             configuration.filesystem.filtered_items.hide_dotfiles = false
             return configuration
         end,
@@ -157,7 +321,7 @@ local config = {
             configuration.options.separator_style = "slant"
             return configuration
         end,
-        lspconfig = function(configuration)
+        lspconfig = function()
             local util = require("lspconfig/util")
             local Job = require("plenary.job")
 
@@ -180,7 +344,7 @@ local config = {
                 return result
             end
 
-            function getIsHubspotMachine()
+            local function getIsHubspotMachine()
                 local result = ""
                 Job:new({
                     command = "ls",
@@ -340,9 +504,20 @@ local config = {
             -- first key is the mode, n == normal mode
             n = {
                 -- second key is the prefix, <leader> prefixes
+                -- which-key registration table for normal mode, leader prefix
+                -- ["N"] = { "<cmd>tabnew<cr>", "New Buffer" },
+                -- ["<H>"] = {
+                --     name = "HubSpot",
+                --     ["t"] = { ":lua require('hubspot-js-utils').test_file()<cr>", "open current file's test if it exists" }
+                -- },
                 ["<leader>"] = {
-                    -- which-key registration table for normal mode, leader prefix
-                    -- ["N"] = { "<cmd>tabnew<cr>", "New Buffer" },
+                    ["H"] = {
+                        name = "HubSpot",
+                        ["t"] = { function() require('hubspot-js-utils').test_file() end, "open current file's test if it exists" }
+                    },
+                    
+                    ["-"] = {function() vim.cmd("split") end, "Split Horizontal"},
+                    ["|"] = {function() vim.cmd("vsplit") end, "Split Vertical"}
                 }
             }
         }
@@ -411,16 +586,22 @@ local config = {
 
         -- first key is the mode
         --
-        i = { },
+        i = {
+
+            ["<C-t>"] = {"<cmd>tabnew<cr>", desc="create buffer"},
+            ["<C-w>"] = {"<cmd>bdelete<cr>", desc="close buffer"},
+            ["<C-s>"] = { "<cmd>w!<cr>", desc = "Save File" },
+            ["<C-q>"] = {"<cmd>q<cr>", desc = "ctrl-q quit"},
+        },
         n = {
             -- second key is the lefthand side of the map
-            -- ["<C-s>"] = { ":w!<cr>", desc = "Save File" },
-            -- ["<C-q>"] = {":q<CR>", desc = "ctrl-q quit"},
+            ["<C-s>"] = { "<cmd>w!<cr>", desc = "Save File" },
+            ["<C-q>"] = {"<cmd>qa<cr>", desc = "ctrl-q quit"},
             ["<S-h>"] = {"^", desc="jump to line start"},
             ["<S-l>"] = {"$", desc="jump to line end"},
-            ["<Leader>k"] = {":bn<CR>", desc="next buffer"},
-            ["<Leader>j"] = {":bp<CR>", desc="prev buffer"},
-            ["<esc>"] = {":noh<CR><esc>", desc="clear highlight with esc"},
+            ["<Leader>k"] = {":bn<cr>", desc="next buffer"},
+            ["<Leader>j"] = {":bp<cr>", desc="prev buffer"},
+            ["<esc>"] = {":noh<cr><esc>", desc="clear highlight with esc"},
             ["<esc>^["] = {"<esc>^[", desc="clear highlight with esc"},
             ["<C-j>"] = {"<C-W><C-J>", desc="jump split"},
             ["<C-k>"] = {"<C-W><C-K>", desc="jump split"},
@@ -428,13 +609,14 @@ local config = {
             ["<C-h>"] = {"<C-W><C-H>", desc="jump split"},
             ["<C-a>"] = {"ggVG", desc="highlight everything"},
 
-            ["<C-t>"] = {":tabnew<CR>", desc="create buffer"},
-            ["<C-w>"] = {":bdelete<CR>", desc="close buffer"},
+            ["<C-t>"] = {"<cmd>tabnew<cr>", desc="create buffer"},
+            ["<C-w>"] = {"<cmd>bdelete<cr>", desc="close buffer"},
             ["n"] = {"nzzzv", desc="centered 'next' when searching"},
 		    ["N"] = {"Nzzzv", desc="centered 'next' when searching"},
             ["<Leader>bb"] = {"<cmd>lua require('telescope.builtin').buffers()<CR>", desc="search buffers"},
             -- place this in one of your configuration file(s)
             ["t"] = {":HopWord<cr>", desc = "jump to a character"},
+            ["T"] = {":HopLine<cr>", desc = "jump to a character"},
         },
         t = {
             -- setting a mapping to false will disable it
