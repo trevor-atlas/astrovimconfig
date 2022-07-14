@@ -45,30 +45,35 @@ function themeTelescope()
             fg = colors.darker_black,
             bg = colors.darker_black,
         },
+        -- search input border
         TelescopePromptBorder = {
-            fg = colors.black2,
-            bg = colors.black2
+            fg = colors.one_bg,
+            bg = colors.one_bg,
         },
+        -- search input
         TelescopePromptNormal = {
             fg = colors.white,
-            bg = colors.black2
+            bg = colors.one_bg,
         },
+        -- search input prefix (icon)
         TelescopePromptPrefix = {
             fg = colors.red,
-            bg = colors.black2
+            bg = colors.one_bg,
         },
-        TelescopeNormal = { bg = colors.darker_black },
+        TelescopeNormal = {
+            bg = colors.darker_black,
+        },
         TelescopePreviewTitle = {
             fg = colors.black,
-            bg = colors.green
+            bg = colors.green,
         },
         TelescopePromptTitle = {
             fg = colors.black,
-            bg = colors.red
+            bg = colors.red,
         },
         TelescopeResultsTitle = {
             fg = colors.darker_black,
-            bg = colors.darker_black
+            bg = colors.darker_black,
         },
         TelescopeSelection = {
             fg = colors.white,
@@ -381,8 +386,6 @@ local config = {
                     require('Navigator').setup()
                 end
             },
-            { "nvim-lua/plenary.nvim" },
-            { "bobrown101/plugin-utils.nvim" },
             { "bobrown101/asset-bender.nvim",
                 requires = {"bobrown101/plugin-utils.nvim"},
                 config = function()
@@ -398,7 +401,19 @@ local config = {
                 requires = { "bobrown101/plugin-utils.nvim" },
                 config = function() require("hubspot-js-utils").setup({}) end
             },
-        },
+            { "akinsho/git-conflict.nvim",
+                config = function()
+                    require("git-conflict").setup({
+                        default_mappings = true, -- disable buffer local mapping created by this plugin
+                        disable_diagnostics = false, -- This will disable the diagnostics in a buffer whilst it is conflicted
+                        highlights = { -- They must have background color, otherwise the default color will be used
+                            incoming = 'DiffText',
+                            current = 'DiffAdd',
+                        }
+                    })
+                end
+            }
+        }, -- end plugin install, begin config
         ["neo-tree"] = function (configuration)
             configuration.window.position = "right"
             configuration.filesystem.filtered_items.hide_dotfiles = false
@@ -406,6 +421,8 @@ local config = {
         end,
         bufferline = function(configuration)
             configuration.options.separator_style = "slant"
+            configuration.options.tab_size = 30
+            configuration.options.max_name_length = 24
             return configuration
         end,
         lspconfig = function()
@@ -471,7 +488,22 @@ local config = {
             -- The nvim-cmp almost supports LSP's capabilities so You should advertise it to LSP servers..
             local capabilities = vim.lsp.protocol.make_client_capabilities()
             capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
-            local on_attach = function(client, bufnr) end
+            local on_attach = function(client, bufnr)
+                vim.api.nvim_create_autocmd("CursorHold", {
+                  buffer = bufnr,
+                  callback = function()
+                    local opts = {
+                      focusable = false,
+                      close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
+                      border = 'rounded',
+                      source = 'always',
+                      prefix = ' ',
+                      scope = 'cursor',
+                    }
+                    vim.diagnostic.open_float(nil, opts)
+                  end
+                })
+            end
             local lsp_flags = { debounce_text_changes = 500 }
 
             if getIsHubspotMachine() then
@@ -564,6 +596,27 @@ local config = {
                 old_on_attach(client)
             end
             return config -- return final config table
+        end,
+        ["nvim-cmp"] = function(configuration)
+            configuration.sources = {
+            { name = "nvim_cmp_hs_translation_source" }, 
+        ---...other sources
+            }
+            -- formatting is totally optional, but setting this up will explicitly let you know a completion is a translation key as opposed to just a word found in your buffer
+            configuration.formatting = {
+                format = function(entry, vim_item)
+                    vim_item.menu = ({
+                        nvim_cmp_hs_translation_source = "[Translation]",
+                        -- other examples may look like
+                        --buffer = "[Buffer]",
+                        --nvim_lsp = "[LSP]",
+                        --luasnip = "[LuaSnip]",
+                        --nvim_lua = "[Lua]",
+                        --latex_symbols = "[Latex]",
+                    })[entry.source.name]
+                    return vim_item
+                end
+            }
         end,
         treesitter = {
             ensure_installed = "all",
@@ -758,6 +811,8 @@ local config = {
         --   },
         -- }
         themeTelescope()
+        -- vim.o.updatetime = 250
+        -- vim.cmd [[autocmd! CursorHold,CursorHoldI * lua vim.diagnostic.open_float(nil, {focus=false})]]
     end
 }
 
