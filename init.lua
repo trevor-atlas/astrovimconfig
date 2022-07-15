@@ -217,141 +217,69 @@ local config = {
           })
         end
       },
-      ["nvim-neo-tree/neo-tree.nvim"] = {disable = true} -- function(configuration)
+      {
+        "nvim-treesitter/nvim-treesitter-context",
+        config = function()
+          require'treesitter-context'.setup {
+            enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
+            max_lines = 0, -- How many lines the window should span. Values <= 0 mean no limit.
+            trim_scope = 'outer', -- Which context lines to discard if `max_lines` is exceeded. Choices: 'inner', 'outer'
+            patterns = { -- Match patterns for TS nodes. These get wrapped to match at word boundaries.
+              -- For all filetypes
+              -- Note that setting an entry here replaces all other patterns for this entry.
+              -- By setting the 'default' entry below, you can control which nodes you want to
+              -- appear in the context window.
+              default = {
+                'class', 'function', 'method'
+                -- 'for', -- These won't appear in the context
+                -- 'while',
+                -- 'if',
+                -- 'switch',
+                -- 'case',
+              }
+              -- Example for a specific filetype.
+              -- If a pattern is missing, *open a PR* so everyone can benefit.
+              --   rust = {
+              --       'impl_item',
+              --   },
+            },
+            exact_patterns = {
+              -- Example for a specific filetype with Lua patterns
+              -- Treat patterns.rust as a Lua pattern (i.e "^impl_item$" will
+              -- exactly match "impl_item" only)
+              -- rust = true,
+            },
+
+            -- [!] The options below are exposed but shouldn't require your attention,
+            --     you can safely ignore them.
+
+            zindex = 20, -- The Z-index of the context window
+            mode = 'cursor' -- Line used to calculate context. Choices: 'cursor', 'topline'
+          }
+        end
+      },
+      {
+        --[[
+        Open agenda prompt: <Leader>oa
+        Open capture prompt: <Leader>oc
+        In any orgmode buffer press g? for help
+        ]] --
+        "nvim-orgmode/orgmode",
+        config = function()
+          local orgmode = require('orgmode')
+          orgmode.setup({org_agenda_files = {'~/Desktop/org/*'}, org_default_notes_file = '~/Desktop/org/notes.org'})
+          orgmode.setup_ts_grammar()
+        end
+      },
+      ["nvim-neo-tree/neo-tree.nvim"] = {disable = true}
     }, -- end plugin install, begin config
-    ["nvim-neo-tree/neo-tree.nvim"] = {disable = true}, -- function(configuration)
-    -- configuration.close_if_last_window = false
-    --   configuration.window.position = "right"
-    --   configuration.filesystem.filtered_items.hide_dotfiles = false
-    --   configuration.window.width = 60;
-    --
-    --   return configuration
-    -- end,
     bufferline = function(configuration)
       configuration.options.separator_style = "slant"
       configuration.options.tab_size = 30
       configuration.options.max_name_length = 24
       return configuration
     end,
-    lspconfig = function()
-      local util = require("lspconfig/util")
-      local Job = require("plenary.job")
-
-      local function getLogPath() return vim.lsp.get_log_path() end
-
-      local function getTsserverPath()
-        local result = "/lib/tsserver.js"
-        Job:new({
-          command = "bpx",
-          args = {"--path", "hs-typescript"},
-          on_exit = function(j, return_val)
-            local path = j:result()[1]
-            result = path .. result
-          end
-        }):sync()
-
-        return result
-      end
-
-      local function getIsHubspotMachine()
-        local result = ""
-        Job:new({
-          command = "ls",
-          args = {vim.env.HOME .. "/.isHubspotMachine"},
-          on_exit = function(_, return_val) result = return_val end
-        }):sync()
-
-        return result == 0
-      end
-
-      local function customPublishDiagnosticFunction(_, result, ctx, conf)
-        local filter = function(fun, t)
-          local res = {}
-          for _, item in ipairs(t) do if fun(item) then res[#res + 1] = item end end
-
-          return res
-        end
-        local raw_diagnostics = result.diagnostics
-
-        local filtered_diagnostics = filter(function(diagnostic)
-          local diagnostic_code = diagnostic.code
-          local diagnostic_source = diagnostic.source
-          return not (diagnostic_code == 7016 and diagnostic_source == "typescript")
-        end, raw_diagnostics)
-
-        result.diagnostics = filtered_diagnostics
-
-        return vim.lsp.diagnostic.on_publish_diagnostics(_, result, ctx, conf)
-      end
-
-      -- The nvim-cmp almost supports LSP's capabilities so You should advertise it to LSP servers..
-      local capabilities = vim.lsp.protocol.make_client_capabilities()
-      capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
-      local on_attach = function(client, bufnr)
-        vim.api.nvim_create_autocmd("CursorHold", {
-          buffer = bufnr,
-          callback = function()
-            local opts = {
-              focusable = false,
-              close_events = {"BufLeave", "CursorMoved", "InsertEnter", "FocusLost"},
-              border = 'rounded',
-              source = 'always',
-              prefix = ' ',
-              scope = 'cursor'
-            }
-            vim.diagnostic.open_float(nil, opts)
-          end
-        })
-      end
-      local lsp_flags = {debounce_text_changes = 500}
-
-      if getIsHubspotMachine() then
-        require("lspconfig").tsserver.setup({
-          flags = lsp_flags,
-          cmd = {
-            "typescript-language-server", "--log-level", -- A number indicating the log level (4 = log, 3 = info, 2 = warn, 1 = error). Defaults to `2`.
-            "2", "--tsserver-log-verbosity", "terse", -- Specify tsserver log verbosity (off, terse, normal, verbose). Defaults to `normal`. example: --tsserver-log-verbosity=verbose
-            "--tsserver-log-file", getLogPath(), "--tsserver-path", getTsserverPath(), "--stdio"
-          },
-          init_options = {hostInfo = "neovim"},
-          on_attach = on_attach,
-          root_dir = util.root_pattern(".git"),
-          filetypes = {
-            "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx"
-          },
-          handlers = {
-            ["textDocument/publishDiagnostics"] = vim.lsp.with(customPublishDiagnosticFunction, {
-              -- Disable virtual_text
-              -- virtual_text = false
-            })
-          },
-          capabilities = capabilities
-        })
-      else
-        require("lspconfig").tsserver.setup({
-          root_dir = util.root_pattern(".git"),
-          init_options = {hostInfo = "neovim"},
-          flags = lsp_flags,
-          on_attach = on_attach,
-          capabilities = capabilities,
-          filetypes = {
-            "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx"
-          }
-        })
-      end
-
-      -- npm install -g graphql-language-service-cli
-      require("lspconfig").graphql.setup({flags = lsp_flags, on_attach = on_attach, capabilities = capabilities})
-
-      -- yarn global add yaml-language-server
-      require("lspconfig").yamlls.setup({flags = lsp_flags, on_attach = on_attach, capabilities = capabilities})
-      require("lspkind").init({flags = lsp_flags, on_attach = on_attach, capabilities = capabilities})
-
-      vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp
-                                                           .with(vim.lsp.handlers.signature_help, {border = "single"})
-
-      vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {border = "single"})
-    end,
+    lspconfig = function() require("user.lsp-config") end,
     telescope = function(config)
       config.defaults.file_ignore_patterns = {"node%_modules/.*"}
       -- config.defaults.border = false
@@ -536,7 +464,11 @@ local config = {
       ["t"] = {":HopWord<cr>", desc = "jump to a character"},
       ["T"] = {":HopLine<cr>", desc = "jump to a character"},
       ["<leader>e"] = {"<cmd>NvimTreeToggle<cr>", desc = "toggle sidenav"},
-      ["<leader>o"] = {"<cmd>NvimTreeFocus<cr>", desc = "toggle sidenav"}
+      ["<leader>o"] = {"<cmd>NvimTreeFocus<cr>", desc = "toggle sidenav"},
+      ["<S-Up>"] = {"<cmd>resize -2<CR>", desc = "Resize split up"},
+      ["<S-Down>"] = {"<cmd>resize +2<CR>", desc = "Resize split down"},
+      ["<S-Left>"] = {"<cmd>vertical resize -2<CR>", desc = "Resize split left"},
+      ["<S-Right>"] = {"<cmd>vertical resize +2<CR>", desc = "Resize split right"}
     },
     t = {
       -- setting a mapping to false will disable it
