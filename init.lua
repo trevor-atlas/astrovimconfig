@@ -1,4 +1,4 @@
-function themeTelescope()
+local function themeTelescope()
   local colors = {
     white = "#bbc2cf",
     darker_black = "#22262e",
@@ -87,7 +87,7 @@ local config = {
       neovide_cursor_vfx_mode = "sonicboom",
       doom_one_terminal_colors = true
     },
-    o = {guifont = "JetBrainsMono Nerd Font:h18"}
+    o = {guifont = "JetBrainsMono Nerd Font:h18", updatetime = 250}
   },
   header = {
     "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⠿⠿⠿⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿",
@@ -496,6 +496,7 @@ local config = {
       ["<C-p>"] = {"<cmd>NavigatorPrevious<cr>"},
       ["<C-a>"] = {"ggVG", desc = "highlight everything"},
       ["<leader>rn"] = {"<cmd>lua vim.lsp.buf.rename()<cr>", desc = "rename symbol"},
+      ["<leader>E"] = {"<cmd>lua vim.diagnostic.open_float()<cr>", desc = "show diagnostics for this line"},
 
       ["<C-t>"] = {"<cmd>tabnew<cr>", desc = "create buffer"},
       ["<C-w>"] = {"<cmd>bdelete<cr>", desc = "close buffer"},
@@ -542,6 +543,21 @@ local config = {
     -- Highlight on yank
     local yankGrp = api.nvim_create_augroup("YankHighlight", {clear = true})
     api.nvim_create_autocmd("TextYankPost", {command = "silent! lua vim.highlight.on_yank()", group = yankGrp})
+    vim.api.nvim_create_autocmd("CursorHold", {
+      buffer = bufnr,
+      callback = function()
+        local opts = {
+          focusable = false,
+          close_events = {"BufLeave", "CursorMoved", "InsertEnter", "FocusLost"},
+          border = 'rounded',
+          source = 'always',
+          prefix = ' ',
+          scope = 'cursor'
+        }
+        vim.diagnostic.open_float(nil, opts)
+      end
+    })
+    vim.diagnostic.config({virtual_text = false})
     -- Set up custom filetypes
     -- vim.filetype.add {
     --   extension = {

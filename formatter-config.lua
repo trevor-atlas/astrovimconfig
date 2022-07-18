@@ -7,7 +7,7 @@ local function getIsHubspotMachine()
   local result = ""
   Job:new({
     command = "ls",
-    args = {vim.env.HOME .. "/.isHubspotMachine"},
+    args = {vim.env.HOME .. "/.hubspot"},
     on_exit = function(_, return_val) result = return_val end
   }):sync()
 
