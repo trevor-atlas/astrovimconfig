@@ -32,7 +32,7 @@ function themeTelescope()
     folder_bg = "#51afef"
   }
 
-  local teletheme = {
+  local telescopetheme = {
     TelescopeBorder = {fg = colors.darker_black, bg = colors.darker_black},
     FloatBorder = {fg = colors.darker_black, bg = colors.darker_black},
     NormalFloat = {fg = colors.darker_black, bg = colors.darker_black},
@@ -48,7 +48,7 @@ function themeTelescope()
     TelescopeResultsTitle = {fg = colors.darker_black, bg = colors.darker_black},
     TelescopeSelection = {fg = colors.white, bg = colors.black2}
   }
-  for hl, col in pairs(teletheme) do vim.api.nvim_set_hl(0, hl, col) end
+  for hl, col in pairs(telescopetheme) do vim.api.nvim_set_hl(0, hl, col) end
 end
 
 local config = {
@@ -155,19 +155,63 @@ local config = {
       --   end,
       -- },
 
-      {
-        'kyazdani42/nvim-tree.lua',
-        config = function()
-          require("nvim-tree").setup({
-            sort_by = "case_sensitive",
-            view = {side = "right", adaptive_size = true, mappings = {list = {{key = "u", action = "dir_up"}}}},
-            renderer = {group_empty = true},
-            filters = {dotfiles = true}
-          })
-        end
-      },
-      {"mhartington/formatter.nvim", config = function() require("user.formatter-config") end},
-      {
+      -- {
+      --   'kyazdani42/nvim-tree.lua',
+      --   config = function()
+      --     require("nvim-tree").setup({
+      --       sort_by = "case_sensitive",
+      --       view = {side = "right", adaptive_size = true, mappings = {list = {{key = "u", action = "dir_up"}}}},
+      --       disable_netrw = true,
+      --       hijack_netrw = true,
+      --       open_on_setup = false,
+      --       ignore_ft_on_setup = {"alpha"},
+      --       hijack_cursor = true,
+      --       hijack_unnamed_buffer_when_opening = false,
+      --       renderer = {
+      --         highlight_git = false,
+      --         highlight_opened_files = "all",
+      --
+      --         indent_markers = {enable = false},
+      --
+      --         icons = {
+      --           show = {file = true, folder = true, folder_arrow = true, git = false},
+      --
+      --           glyphs = {
+      --             default = "",
+      --             symlink = "",
+      --             folder = {
+      --               default = "",
+      --               empty = "",
+      --               empty_open = "",
+      --               open = "",
+      --               symlink = "",
+      --               symlink_open = "",
+      --               arrow_open = "",
+      --               arrow_closed = ""
+      --             },
+      --             git = {
+      --               unstaged = "✗",
+      --               staged = "✓",
+      --               unmerged = "",
+      --               renamed = "➜",
+      --               untracked = "★",
+      --               deleted = "",
+      --               ignored = "◌"
+      --             }
+      --           }
+      --         }
+      --       },
+      --
+      --       filters = {dotfiles = false},
+      --       update_cwd = true,
+      --       update_focused_file = {enable = true, update_cwd = false},
+      --       filesystem_watchers = {enable = true},
+      --       actions = {open_file = {resize_window = true}}
+      --
+      --     })
+      --   end
+      -- },
+      {"mhartington/formatter.nvim", config = function() require("user.formatter-config") end}, {
         "rmagatti/auto-session",
         config = function()
           require('auto-session').setup {log_level = 'info', auto_session_suppress_dirs = {'~/', '~/projects'}}
@@ -181,30 +225,24 @@ local config = {
           -- you can configure Hop the way you like here; see :h hop-config
           require("hop").setup({keys = "etovxqpdygfblzhckisuran"})
         end
-      },
-      {
+      }, {
         "kylechui/nvim-surround",
         config = function()
           require("nvim-surround").setup({}) -- Configuration here, or leave empty to use defaults
         end
-      },
-      {"bobrown101/plugin-utils.nvim"},
-      {"numToStr/Navigator.nvim", config = function() require('Navigator').setup() end},
-      {
+      }, {"bobrown101/plugin-utils.nvim"},
+      {"numToStr/Navigator.nvim", config = function() require('Navigator').setup() end}, {
         "bobrown101/asset-bender.nvim",
         requires = {"bobrown101/plugin-utils.nvim"},
         config = function() require("asset-bender").setup({}) end
-      },
-      {
+      }, {
         'bobrown101/nvim_cmp_hs_translation_source',
         config = function() require('nvim_cmp_hs_translation_source').setup() end
-      },
-      {
+      }, {
         "bobrown101/hubspot-js-utils.nvim",
         requires = {"bobrown101/plugin-utils.nvim"},
         config = function() require("hubspot-js-utils").setup({}) end
-      },
-      {
+      }, {
         "akinsho/git-conflict.nvim",
         config = function()
           require("git-conflict").setup({
@@ -216,8 +254,7 @@ local config = {
             }
           })
         end
-      },
-      {
+      }, {
         "nvim-treesitter/nvim-treesitter-context",
         config = function()
           require'treesitter-context'.setup {
@@ -257,11 +294,10 @@ local config = {
             mode = 'cursor' -- Line used to calculate context. Choices: 'cursor', 'topline'
           }
         end
-      },
-      {
+      }, {
         --[[
-        Open agenda prompt: <Leader>oa
-        Open capture prompt: <Leader>oc
+        Open agenda prompt: <leader>oa
+        Open capture prompt: <leader>oc
         In any orgmode buffer press g? for help
         ]] --
         "nvim-orgmode/orgmode",
@@ -270,9 +306,14 @@ local config = {
           orgmode.setup({org_agenda_files = {'~/Desktop/org/*'}, org_default_notes_file = '~/Desktop/org/notes.org'})
           orgmode.setup_ts_grammar()
         end
-      },
-      ["nvim-neo-tree/neo-tree.nvim"] = {disable = true}
+      }
     }, -- end plugin install, begin config
+    ["neo-tree"] = function(configuration)
+      configuration.window.position = "right"
+      configuration.filesystem.filtered_items.hide_dotfiles = false
+      configuration.close_if_last_window = false
+      return configuration
+    end,
     bufferline = function(configuration)
       configuration.options.separator_style = "slant"
       configuration.options.tab_size = 30
@@ -444,31 +485,32 @@ local config = {
       ["<C-q>"] = {"<cmd>qa<cr>", desc = "ctrl-q quit"},
       ["<S-h>"] = {"^", desc = "jump to line start"},
       ["<S-l>"] = {"$", desc = "jump to line end"},
-      ["<Leader>k"] = {":bn<cr>", desc = "next buffer"},
-      ["<Leader>j"] = {":bp<cr>", desc = "prev buffer"},
+      ["<leader>k"] = {":bn<cr>", desc = "next buffer"},
+      ["<leader>j"] = {":bp<cr>", desc = "prev buffer"},
       ["<esc>"] = {":noh<cr><esc>", desc = "clear highlight with esc"},
       ["<esc>^["] = {"<esc>^[", desc = "clear highlight with esc"},
-      ["<C-h>"] = {"<CMD>NavigatorLeft<CR>"},
-      ["<C-l>"] = {"<CMD>NavigatorRight<CR>"},
-      ["<C-k>"] = {"<CMD>NavigatorUp<CR>"},
-      ["<C-j>"] = {"<CMD>NavigatorDown<CR>"},
-      ["<C-p>"] = {"<CMD>NavigatorPrevious<CR>"},
+      ["<C-h>"] = {"<cmd>NavigatorLeft<cr>"},
+      ["<C-l>"] = {"<cmd>NavigatorRight<cr>"},
+      ["<C-k>"] = {"<cmd>NavigatorUp<cr>"},
+      ["<C-j>"] = {"<cmd>NavigatorDown<cr>"},
+      ["<C-p>"] = {"<cmd>NavigatorPrevious<cr>"},
       ["<C-a>"] = {"ggVG", desc = "highlight everything"},
+      ["<leader>rn"] = {"<cmd>lua vim.lsp.buf.rename()<cr>", desc = "rename symbol"},
 
       ["<C-t>"] = {"<cmd>tabnew<cr>", desc = "create buffer"},
       ["<C-w>"] = {"<cmd>bdelete<cr>", desc = "close buffer"},
       ["n"] = {"nzzzv", desc = "centered 'next' when searching"},
       ["N"] = {"Nzzzv", desc = "centered 'next' when searching"},
-      ["<Leader>bb"] = {"<cmd>lua require('telescope.builtin').buffers()<CR>", desc = "search buffers"},
+      ["<leader>bb"] = {"<cmd>lua require('telescope.builtin').buffers()<cr>", desc = "search buffers"},
       -- place this in one of your configuration file(s)
       ["t"] = {":HopWord<cr>", desc = "jump to a character"},
       ["T"] = {":HopLine<cr>", desc = "jump to a character"},
-      ["<leader>e"] = {"<cmd>NvimTreeToggle<cr>", desc = "toggle sidenav"},
-      ["<leader>o"] = {"<cmd>NvimTreeFocus<cr>", desc = "toggle sidenav"},
-      ["<S-Up>"] = {"<cmd>resize -2<CR>", desc = "Resize split up"},
-      ["<S-Down>"] = {"<cmd>resize +2<CR>", desc = "Resize split down"},
-      ["<S-Left>"] = {"<cmd>vertical resize -2<CR>", desc = "Resize split left"},
-      ["<S-Right>"] = {"<cmd>vertical resize +2<CR>", desc = "Resize split right"}
+      -- ["<leader>e"] = {"<cmd>NvimTreeToggle<cr>", desc = "toggle sidenav"},
+      -- ["<leader>o"] = {"<cmd>NvimTreeFocus<cr>", desc = "toggle sidenav"},
+      ["<S-Up>"] = {"<cmd>resize -2<cr>", desc = "Resize split up"},
+      ["<S-Down>"] = {"<cmd>resize +2<cr>", desc = "Resize split down"},
+      ["<S-Left>"] = {"<cmd>vertical resize -2<cr>", desc = "Resize split left"},
+      ["<S-Right>"] = {"<cmd>vertical resize +2<cr>", desc = "Resize split right"}
     },
     t = {
       -- setting a mapping to false will disable it
@@ -477,8 +519,8 @@ local config = {
     v = {
       ["<S-h>"] = {"^", desc = "jump to line start"},
       ["<S-l>"] = {"$", desc = "jump to line end"},
-      ["<S-j>"] = {":m '>+1<CR>gv=gv", desc = "Move lines around"},
-      ["<S-k>"] = {":m '<-2<CR>gv=gv", desc = "Move lines around"}
+      ["<S-j>"] = {":m '>+1<cr>gv=gv", desc = "Move lines around"},
+      ["<S-k>"] = {":m '<-2<cr>gv=gv", desc = "Move lines around"}
     }
   },
 
