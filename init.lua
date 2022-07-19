@@ -266,7 +266,18 @@ local config = {
     end,
     lspconfig = function() require("user.lsp-config") end,
     telescope = function(config)
+      local actions = require "telescope.actions"
+      config.defaults.vimgrep_arguments = {
+        "rg", "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case"
+      }
+      config.defaults.file_sorter = require("telescope.sorters").get_fuzzy_file
       config.defaults.file_ignore_patterns = {"node%_modules/.*"}
+      config.defaults.generic_sorter = require("telescope.sorters").get_generic_fuzzy_sorter
+      config.defaults.path_display = {"truncate"}
+      config.defaults.mappings.i["<esc>"] = actions.close
+      config.defaults.mappings.i["<C-k>"] = actions.preview_scrolling_up
+      config.defaults.mappings.i["<C-j>"] = actions.preview_scrolling_down
+
       -- config.defaults.border = false
       config.defaults.winblend = 0
       config.defaults.color_devicons = true
