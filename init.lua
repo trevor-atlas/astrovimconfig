@@ -32,23 +32,82 @@ local function themeTelescope()
     folder_bg = "#51afef"
   }
 
+  local cool = {
+    black = "#151820",
+    bg0 = "#242b38",
+    bg1 = "#2d3343",
+    bg2 = "#343e4f",
+    bg3 = "#363c51",
+    bg_d = "#1e242e",
+    bg_blue = "#6db9f7",
+    bg_yellow = "#f0d197",
+    fg = "#a5b0c5",
+    purple = "#ca72e4",
+    green = "#97ca72",
+    orange = "#d99a5e",
+    blue = "#5ab0f6",
+    yellow = "#ebc275",
+    cyan = "#4dbdcb",
+    red = "#ef5f6b",
+    grey = "#546178",
+    light_grey = "#7d899f",
+    dark_cyan = "#25747d",
+    dark_red = "#a13131",
+    dark_yellow = "#9a6b16",
+    dark_purple = "#8f36a9",
+    diff_add = "#303d27",
+    diff_delete = "#3c2729",
+    diff_change = "#18344c",
+    diff_text = "#265478"
+  }
+
   local telescopetheme = {
     TelescopeBorder = {fg = colors.darker_black, bg = colors.darker_black},
     FloatBorder = {fg = colors.darker_black, bg = colors.darker_black},
-    NormalFloat = {fg = colors.darker_black, bg = colors.darker_black},
+    NormalFloat = {fg = colors.white, bg = colors.darker_black},
     -- search input border
     TelescopePromptBorder = {fg = colors.one_bg, bg = colors.one_bg},
     -- search input
     TelescopePromptNormal = {fg = colors.white, bg = colors.one_bg},
     -- search input prefix (icon)
     TelescopePromptPrefix = {fg = colors.red, bg = colors.one_bg},
-    TelescopeNormal = {bg = colors.darker_black},
+    TelescopeNormal = {fg = colors.white, bg = colors.darker_black},
     TelescopePreviewTitle = {fg = colors.black, bg = colors.green},
     TelescopePromptTitle = {fg = colors.black, bg = colors.red},
-    TelescopeResultsTitle = {fg = colors.darker_black, bg = colors.darker_black},
+    TelescopeResultsTitle = {fg = colors.white, bg = colors.darker_black},
     TelescopeSelection = {fg = colors.white, bg = colors.black2}
   }
   for hl, col in pairs(telescopetheme) do vim.api.nvim_set_hl(0, hl, col) end
+
+  vim.api.nvim_set_hl(0, 'TSTypeDefinition', {fg = colors.vibrant_green})
+  vim.api.nvim_set_hl(0, 'typescriptTSType', {fg = colors.vibrant_green})
+
+  -- '<' and '>' in html
+  vim.api.nvim_set_hl(0, 'TSTagDelimiter', {fg = "#ff9ff5"})
+
+  -- <TAGNAME/>
+  vim.api.nvim_set_hl(0, 'TSTag', {fg = colors.dark_purple})
+  vim.api.nvim_set_hl(0, 'tsxTSTag', {fg = colors.dark_purple})
+
+  -- <div attribute="" />
+  vim.api.nvim_set_hl(0, 'TSTagAttribute', {fg = "#f0d197"})
+
+  vim.api.nvim_set_hl(0, 'tsxTSConstructor', {fg = colors.dark_purple})
+  vim.api.nvim_set_hl(0, 'typescriptTSConstructor', {fg = colors.blue})
+
+  -- const THING = ''
+  vim.api.nvim_set_hl(0, 'TSVariable', {fg = '#b2abe8'})
+  -- vim.api.nvim_set_hl(0, 'tsxTSVariable', {fg = cool.fg})
+
+  -- vim.api.nvim_set_hl(0, 'TSProperty', {fg = colors.})
+
+  --[[
+* **@variable** -> **tsxTSVariable** -> **TSVariable**
+* **@constructor** -> **tsxTSConstructor** -> **TSConstructor**
+* **@tag** -> **tsxTSTag** -> **TSTag**
+* **@constructor** -> **tsxTSConstructor** -> **TSConstructor**
+
+  --]]
 end
 
 local config = {
@@ -158,11 +217,45 @@ local config = {
       {"mhartington/formatter.nvim", config = function() require("user.formatter-config") end}, {
         "rmagatti/auto-session",
         config = function()
-          require('auto-session').setup {log_level = 'info', auto_session_suppress_dirs = {'~/', '~/projects'}}
+          require('auto-session').setup {
+            log_level = 'info',
+            auto_session_suppress_dirs = {'~/'},
+            auto_session_enable_last_session = true,
+            auto_save_enabled = true,
+            auto_session_enabled = true
+          }
         end
       }, -- { "christoomey/vim-tmux-navigator" },
-      {"romgrk/doom-one.vim"}, -- colorscheme
+      -- {"romgrk/doom-one.vim"}, -- colorscheme
       {
+        "NTBBloodbath/doom-one.nvim",
+        config = function()
+          require('doom-one').setup({
+            cursor_coloring = true,
+            terminal_colors = false,
+            italic_comments = true,
+            enable_treesitter = true,
+            transparent_background = false,
+            pumblend = {enable = true, transparency_amount = 20},
+            plugins_integrations = {
+              neorg = true,
+              barbar = true,
+              bufferline = true,
+              gitgutter = true,
+              gitsigns = true,
+              telescope = false,
+              neogit = true,
+              nvim_tree = true,
+              dashboard = true,
+              startify = true,
+              whichkey = true,
+              indent_blankline = true,
+              vim_illuminate = true,
+              lspsaga = false
+            }
+          })
+        end
+      }, {"nvim-treesitter/playground"}, {
         "phaazon/hop.nvim", -- autojump
         branch = "v2", -- optional but strongly recommended
         config = function()
@@ -252,52 +345,55 @@ local config = {
         end
       }
     }, -- end plugin install, begin config
-    ["neo-tree"] = function(configuration)
-      configuration.window.position = "right"
-      configuration.filesystem.filtered_items.hide_dotfiles = false
-      configuration.close_if_last_window = false
-      return configuration
+    ["neo-tree"] = function(c)
+      c.window.position = "right"
+      c.window.width = 40
+      c.filesystem.filtered_items.hide_dotfiles = false
+      c.filesystem.filtered_items.hide_by_name = {"node_modules", ".DS_Store"}
+      c.filesystem.filtered_items.never_show = {".DS_Store", "thumbs.db"}
+      c.close_if_last_window = false
+      return c
     end,
-    bufferline = function(configuration)
-      configuration.options.separator_style = "slant"
-      configuration.options.tab_size = 30
-      configuration.options.max_name_length = 24
-      return configuration
+    bufferline = function(c)
+      c.options.separator_style = "slant"
+      c.options.tab_size = 30
+      c.options.max_name_length = 24
+      return c
     end,
     lspconfig = function() require("user.lsp-config") end,
-    telescope = function(config)
+    telescope = function(c)
       local actions = require "telescope.actions"
-      config.defaults.vimgrep_arguments = {
+      c.defaults.vimgrep_arguments = {
         "rg", "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case"
       }
-      config.defaults.file_sorter = require("telescope.sorters").get_fuzzy_file
-      config.defaults.file_ignore_patterns = {"node%_modules/.*"}
-      config.defaults.generic_sorter = require("telescope.sorters").get_generic_fuzzy_sorter
-      config.defaults.path_display = {"truncate"}
-      config.defaults.mappings.i["<esc>"] = actions.close
-      config.defaults.mappings.i["<C-k>"] = actions.preview_scrolling_up
-      config.defaults.mappings.i["<C-j>"] = actions.preview_scrolling_down
+      c.defaults.file_sorter = require("telescope.sorters").get_fuzzy_file
+      c.defaults.file_ignore_patterns = {"node%_modules/.*"}
+      c.defaults.generic_sorter = require("telescope.sorters").get_generic_fuzzy_sorter
+      c.defaults.path_display = {"truncate"}
+      c.defaults.mappings.i["<esc>"] = actions.close
+      c.defaults.mappings.i["<C-k>"] = actions.preview_scrolling_up
+      c.defaults.mappings.i["<C-j>"] = actions.preview_scrolling_down
 
       -- config.defaults.border = false
-      config.defaults.winblend = 0
-      config.defaults.color_devicons = true
+      c.defaults.winblend = 0
+      c.defaults.color_devicons = true
       -- config.defaults.border="rounded"
-      return config
+      return c
 
     end,
     -- All other entries override the setup() call for default plugins
-    ["null-ls"] = function(config)
+    ["null-ls"] = function(c)
       local null_ls = require "null-ls"
       -- Check supported formatters and linters
       -- https://github.com/jose-elias-alvarez/null-ls.nvim/tree/main/lua/null-ls/builtins/formatting
       -- https://github.com/jose-elias-alvarez/null-ls.nvim/tree/main/lua/null-ls/builtins/diagnostics
-      config.sources = { -- Set a formatter
+      c.sources = { -- Set a formatter
         null_ls.builtins.formatting.rufo, -- Set a linter
         null_ls.builtins.diagnostics.rubocop
       }
       -- set up null-ls's on_attach function
-      local old_on_attach = config.on_attach;
-      config.on_attach = function(client)
+      local old_on_attach = c.on_attach;
+      c.on_attach = function(client)
         -- NOTE: You can remove this on attach function to disable format on save
         if client.resolved_capabilities.document_formatting then
           vim.api.nvim_create_autocmd("BufWritePre", {
@@ -308,28 +404,25 @@ local config = {
         end
         old_on_attach(client)
       end
-      return config -- return final config table
+      return c -- return final config table
     end,
-    ["nvim-cmp"] = function(configuration)
-      configuration.sources = {
-        {name = "nvim_cmp_hs_translation_source"}
-        ---...other sources
-      }
+    ["nvim-cmp"] = function(c)
+      c.sources = {{name = "nvim_cmp_hs_translation_source"}}
       -- formatting is totally optional, but setting this up will explicitly let you know a completion is a translation key as opposed to just a word found in your buffer
-      configuration.formatting = {
+      c.formatting = {
         format = function(entry, vim_item)
           vim_item.menu = ({
+            buffer = "[Buffer]",
+            nvim_lsp = "[LSP]",
+            luasnip = "[LuaSnip]",
+            nvim_lua = "[Lua]",
+            latex_symbols = "[Latex]",
             nvim_cmp_hs_translation_source = "[Translation]"
-            -- other examples may look like
-            -- buffer = "[Buffer]",
-            -- nvim_lsp = "[LSP]",
-            -- luasnip = "[LuaSnip]",
-            -- nvim_lua = "[Lua]",
-            -- latex_symbols = "[Latex]",
           })[entry.source.name]
           return vim_item
         end
       }
+      return c
     end,
     treesitter = {ensure_installed = "all", ignore_install = {"phpdoc"}},
     ["nvim-lsp-installer"] = {
@@ -361,9 +454,11 @@ local config = {
         --     ["t"] = { ":lua require('hubspot-js-utils').test_file()<cr>", "open current file's test if it exists" }
         -- },
         ["<leader>"] = {
+          ["l"] = {["x"] = {"<cmd>TSHighlightCapturesUnderCursor<cr>", "describe token under cursor"}},
           ["H"] = {
             name = "HubSpot",
             ["t"] = {function() require('hubspot-js-utils').test_file() end, "open current file's test if it exists"}
+
           },
 
           ["-"] = {function() vim.cmd("split") end, "Split Horizontal"},
@@ -512,21 +607,18 @@ local config = {
         vim.diagnostic.open_float(nil, opts)
       end
     })
-    -- Set up custom filetypes
-    -- vim.filetype.add {
-    --   extension = {
-    --     foo = "fooscript",
-    --   },
-    --   filename = {
-    --     ["Foofile"] = "fooscript",
-    --   },
-    --   pattern = {
-    --     ["~/%.config/foo/.*"] = "fooscript",
-    --   },
-    -- }
+
     themeTelescope()
-    -- vim.o.updatetime = 250
-    -- vim.cmd [[autocmd! CursorHold,CursorHoldI * lua vim.diagnostic.open_float(nil, {focus=false})]]
+    -- Set up custom filetypes
+    vim.filetype.add {
+      extension = {lyaml = "yaml"}
+      -- filename = {
+      --   ["Foofile"] = "fooscript",
+      -- },
+      -- pattern = {
+      --   ["~/%.config/foo/.*"] = "fooscript",
+      -- },
+    }
   end
 }
 
