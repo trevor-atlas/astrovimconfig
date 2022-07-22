@@ -214,7 +214,15 @@ local config = {
       --   end,
       -- },
 
-      {"mhartington/formatter.nvim", config = function() require("user.formatter-config") end}, {
+      {
+        "yamatsum/nvim-cursorline",
+        config = function()
+          require('nvim-cursorline').setup {
+            cursorline = {enable = false, timeout = 0, number = false},
+            cursorword = {enable = true, min_length = 1, hl = {underline = true}}
+          }
+        end
+      }, {"mhartington/formatter.nvim", config = function() require("user.formatter-config") end}, {
         "rmagatti/auto-session",
         config = function()
           require('auto-session').setup {
