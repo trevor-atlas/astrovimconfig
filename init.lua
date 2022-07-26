@@ -494,6 +494,7 @@ local config = {
     mappings = {
       n = {
         -- ["<leader>lf"] = false -- disable formatting keymap
+        ['<leader>D'] = "<cmd>lua require('telescope.builtin').lsp_definitions({ jump_type = 'never', fname_width = 0 })<cr>"
       }
     },
     -- add to the server on_attach function

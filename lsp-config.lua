@@ -52,11 +52,18 @@ end
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
 
+function conditional_func(func, condition, ...)
+  if (condition == nil and true or condition) and type(func) == "function" then return func(...) end
+end
+
 function create_on_attach(server_name)
   local server = require("lspconfig")[server_name]
   local old_on_attach = server.on_attach
   local custom_on_attach = function(client, bufnr)
-    old_on_attach(client, bufnr)
+    conditional_func(old_on_attach, true, client, bufnr)
+    local bufopts = {noremap = true, silent = true, buffer = bufnr}
+
+    -- vim.keymap.set('n', '<leader><S-D>', "<cmd>lua require('telescope.builtin').lsp_type_definitions({ jump_type = 'never' })<cr>", bufopts)
     vim.api.nvim_create_autocmd("CursorHold", {
       buffer = bufnr,
       callback = function()
