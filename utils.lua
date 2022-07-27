@@ -2,13 +2,13 @@ local Job = require("plenary.job")
 
 local M = {}
 
-M.dir_exists = function(dirpath)
+function M.dir_exists(dirpath)
   local result = ""
   Job:new({command = "ls", args = {dirpath}, on_exit = function(_, return_val) result = return_val end}):sync()
   return result == 0
 end
 
-M.conditional_func = function(func, condition, ...)
+function M.conditional_func(func, condition, ...)
   if (condition == nil and true or condition) and type(func) == "function" then return func(...) end
 end
 
@@ -30,20 +30,38 @@ function M.dirname(filepath)
   return result, is_changed
 end
 
-function M.buffer_find_root_dir(bufnr, is_root_path)
-  -- change to use git instead of this 
-  -- git rev-parse --show-toplevel | tr -d '\\n'
+function M.find_root_git_dir(bufnr, is_root_path)
+  local git_root = ""
+  Job:new({
+    command = "git",
+    args = {"rev-parse", "--show-toplevel"},
+    on_exit = function(results, _) git_root = results._stdout_results[1] end
+  }):sync()
+  local result, _ = string.gsub(git_root, "[\r\n]", "")
+  return result
+end
+
+function M.buffer_find_file_dir(bufnr, filename)
   local bufname = vim.api.nvim_buf_get_name(bufnr)
   if vim.fn.filereadable(bufname) == 0 then return nil end
   local dir = bufname
-  -- Just in case our algo is buggy, don't infinite loop.
-  for _ = 1, 100 do
-    local did_change
-    dir, did_change = M.dirname(dir)
-    if is_root_path(dir, bufname) then return dir, bufname end
-    -- If we can't ascend further, then stop looking.
-    if not did_change then return nil end
+  while (dir ~= "") do
+    dir = dir:gsub(M.path_sep .. "([^" .. M.path_sep .. "]+)$", "")
+    if vim.fn.findfile(filename, vim.fn.finddir(dir)) ~= "" then return dir, bufname end
   end
+  return nil
+end
+
+function M.buffer_find_file(bufnr, filename)
+  local bufname = vim.api.nvim_buf_get_name(bufnr)
+  if vim.fn.filereadable(bufname) == 0 then return nil end
+  local dir = bufname
+  while (dir ~= "") do
+    dir = dir:gsub(M.path_sep .. "([^" .. M.path_sep .. "]+)$", "")
+    local found_file = vim.fn.findfile(filename, vim.fn.finddir(dir))
+    if found_file ~= "" then return found_file end
+  end
+  return nil
 end
 
 function M.file_exists(fname)
@@ -62,15 +80,19 @@ end
 
 function M.determine_os()
   local uname = M.get_uname()
-  P(uname)
   local osnames = {"WSL", "Darwin"}
   for _, name in ipairs(osnames) do if not not string.find(uname or "", name) then return name end end
   return "Unknown"
 end
 
+-- P(M.buffer_find_file_dir(vim.fn.bufnr(), 'prettier.config.js'))
+-- P(M.buffer_find_file(vim.fn.bufnr(), 'prettier.config.js'))
+
 M.is_hubspot_machine = M.dir_exists(vim.env.HOME .. "/.hubspot")
 M.os = M.determine_os()
 M.is_wsl = M.os == "WSL"
 M.is_macos = M.os == "Darwin"
+
+M.find_root_git_dir()
 
 return M

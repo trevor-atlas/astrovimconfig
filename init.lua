@@ -428,13 +428,8 @@ local config = {
       ["<C-q>"] = {"<cmd>q<cr>", desc = "ctrl-q quit"}
     },
     n = {
-      -- second key is the lefthand side of the map
       ["<C-s>"] = {"<cmd>w!<cr>", desc = "Save File"},
       ["<C-q>"] = {"<cmd>qa<cr>", desc = "ctrl-q quit"},
-      ["<S-h>"] = {"^", desc = "jump to line start"},
-      ["<S-l>"] = {"$", desc = "jump to line end"},
-      ["<leader>k"] = {":bn<cr>", desc = "next buffer"},
-      ["<leader>j"] = {":bp<cr>", desc = "prev buffer"},
       ["<esc>"] = {":noh<cr><esc>", desc = "clear highlight with esc"},
       ["<esc>^["] = {"<esc>^[", desc = "clear highlight with esc"},
       ["<C-h>"] = {"<cmd>NavigatorLeft<cr>"},
@@ -443,25 +438,27 @@ local config = {
       ["<C-j>"] = {"<cmd>NavigatorDown<cr>"},
       ["<C-p>"] = {"<cmd>NavigatorPrevious<cr>"},
       ["<C-a>"] = {"ggVG", desc = "highlight everything"},
-      ["<leader>rn"] = {"<cmd>lua vim.lsp.buf.rename()<cr>", desc = "rename symbol"},
-      ["<leader>E"] = {"<cmd>lua vim.diagnostic.open_float()<cr>", desc = "show diagnostics for this line"},
-
       ["<C-t>"] = {"<cmd>tabnew<cr>", desc = "create buffer"},
       ["<C-w>"] = {"<cmd>bdelete<cr>", desc = "close buffer"},
-      ["n"] = {"nzzzv", desc = "centered 'next' when searching"},
-      ["N"] = {"Nzzzv", desc = "centered 'next' when searching"},
+
+      ["<leader>k"] = {":bn<cr>", desc = "next buffer"},
+      ["<leader>j"] = {":bp<cr>", desc = "prev buffer"},
+      ["<leader>rn"] = {"<cmd>lua vim.lsp.buf.rename()<cr>", desc = "rename symbol"},
+      ["<leader>E"] = {"<cmd>lua vim.diagnostic.open_float()<cr>", desc = "show diagnostics for this line"},
       ["<leader>bb"] = {"<cmd>lua require('telescope.builtin').buffers()<cr>", desc = "search buffers"},
-      -- place this in one of your configuration file(s)
+      ["<leader>G"] = {"<cmd>lua require('neogit').open()<cr>", desc = "open neogit"},
+
+      ["n"] = {"nzzzv", desc = "centered 'next' when searching"},
+      ["N"] = {"Nzzzv", desc = "centered 'prev' when searching"},
       ["t"] = {":HopWord<cr>", desc = "jump to a character"},
       ["T"] = {":HopLine<cr>", desc = "jump to a character"},
-      -- ["<leader>e"] = {"<cmd>NvimTreeToggle<cr>", desc = "toggle sidenav"},
-      -- ["<leader>o"] = {"<cmd>NvimTreeFocus<cr>", desc = "toggle sidenav"},
+
+      ["<S-h>"] = {"^", desc = "jump to line start"},
+      ["<S-l>"] = {"$", desc = "jump to line end"},
       ["<S-Up>"] = {"<cmd>resize -2<cr>", desc = "Resize split up"},
       ["<S-Down>"] = {"<cmd>resize +2<cr>", desc = "Resize split down"},
       ["<S-Left>"] = {"<cmd>vertical resize -2<cr>", desc = "Resize split left"},
-      ["<S-Right>"] = {"<cmd>vertical resize +2<cr>", desc = "Resize split right"},
-      ["<leader>G"] = {"<cmd>lua require('neogit').open()<cr>", desc = "open neogit"},
-      ["<leader>xx"] = {"<cmd>lua R(vim.fn.expand('%'))<cr>", desc = "reload current lua file"}
+      ["<S-Right>"] = {"<cmd>vertical resize +2<cr>", desc = "Resize split right"}
     },
     t = {
       -- setting a mapping to false will disable it
