@@ -215,23 +215,27 @@ local config = {
       -- },
 
       {
+        'TimUntersberger/neogit',
+        requires = 'nvim-lua/plenary.nvim',
+        config = function() require('neogit').setup({}) end
+      }, {
         "yamatsum/nvim-cursorline",
         config = function()
-          require('nvim-cursorline').setup {
+          require('nvim-cursorline').setup({
             cursorline = {enable = false, timeout = 0, number = false},
             cursorword = {enable = true, min_length = 1, hl = {underline = true}}
-          }
+          })
         end
       }, {"mhartington/formatter.nvim", config = function() require("user.formatter-config") end}, {
         "rmagatti/auto-session",
         config = function()
-          require('auto-session').setup {
+          require('auto-session').setup({
             log_level = 'info',
             auto_session_suppress_dirs = {'~/'},
             auto_session_enable_last_session = true,
             auto_save_enabled = true,
             auto_session_enabled = true
-          }
+          })
         end
       }, -- { "christoomey/vim-tmux-navigator" },
       -- {"romgrk/doom-one.vim"}, -- colorscheme
@@ -570,7 +574,8 @@ local config = {
       ["<S-Up>"] = {"<cmd>resize -2<cr>", desc = "Resize split up"},
       ["<S-Down>"] = {"<cmd>resize +2<cr>", desc = "Resize split down"},
       ["<S-Left>"] = {"<cmd>vertical resize -2<cr>", desc = "Resize split left"},
-      ["<S-Right>"] = {"<cmd>vertical resize +2<cr>", desc = "Resize split right"}
+      ["<S-Right>"] = {"<cmd>vertical resize +2<cr>", desc = "Resize split right"},
+      ["<leader>G"] = {"<cmd>lua require('neogit').open()<cr>", desc = "open neogit"}
     },
     t = {
       -- setting a mapping to false will disable it
