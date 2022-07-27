@@ -1,118 +1,4 @@
-local function themeTelescope()
-  local colors = {
-    white = "#bbc2cf",
-    darker_black = "#22262e",
-    black = "#282c34",
-    black2 = "#2e323a",
-    one_bg = "#32363e",
-    one_bg2 = "#3c4048",
-    one_bg3 = "#41454d",
-    grey = "#494d55",
-    grey_fg = "#53575f",
-    grey_fg2 = "#5d6169",
-    light_grey = "#676b73",
-    red = "#ff6b5a",
-    baby_pink = "#ff7665",
-    pink = "#ff75a0",
-    line = "#3b3f47", -- for lines like vertsplit
-    green = "#98be65",
-    vibrant_green = "#a9cf76",
-    nord_blue = "#47a5e5",
-    blue = "#61afef",
-    yellow = "#ECBE7B",
-    sun = "#f2c481",
-    purple = "#dc8ef3",
-    dark_purple = "#c678dd",
-    teal = "#4db5bd",
-    orange = "#ea9558",
-    cyan = "#46D9FF",
-    statusline_bg = "#2d3139",
-    lightbg = "#3a3e46",
-    pmenu_bg = "#98be65",
-    folder_bg = "#51afef"
-  }
-
-  local cool = {
-    black = "#151820",
-    bg0 = "#242b38",
-    bg1 = "#2d3343",
-    bg2 = "#343e4f",
-    bg3 = "#363c51",
-    bg_d = "#1e242e",
-    bg_blue = "#6db9f7",
-    bg_yellow = "#f0d197",
-    fg = "#a5b0c5",
-    purple = "#ca72e4",
-    green = "#97ca72",
-    orange = "#d99a5e",
-    blue = "#5ab0f6",
-    yellow = "#ebc275",
-    cyan = "#4dbdcb",
-    red = "#ef5f6b",
-    grey = "#546178",
-    light_grey = "#7d899f",
-    dark_cyan = "#25747d",
-    dark_red = "#a13131",
-    dark_yellow = "#9a6b16",
-    dark_purple = "#8f36a9",
-    diff_add = "#303d27",
-    diff_delete = "#3c2729",
-    diff_change = "#18344c",
-    diff_text = "#265478"
-  }
-
-  local telescopetheme = {
-    TelescopeBorder = {fg = colors.darker_black, bg = colors.darker_black},
-    FloatBorder = {fg = colors.darker_black, bg = colors.darker_black},
-    NormalFloat = {fg = colors.white, bg = colors.darker_black},
-    -- search input border
-    TelescopePromptBorder = {fg = colors.one_bg, bg = colors.one_bg},
-    -- search input
-    TelescopePromptNormal = {fg = colors.white, bg = colors.one_bg},
-    -- search input prefix (icon)
-    TelescopePromptPrefix = {fg = colors.red, bg = colors.one_bg},
-    TelescopeNormal = {fg = colors.white, bg = colors.darker_black},
-    TelescopePreviewTitle = {fg = colors.black, bg = colors.green},
-    TelescopePromptTitle = {fg = colors.black, bg = colors.red},
-    TelescopeResultsTitle = {fg = colors.white, bg = colors.darker_black},
-    TelescopeSelection = {fg = colors.white, bg = colors.black2}
-  }
-  for hl, col in pairs(telescopetheme) do vim.api.nvim_set_hl(0, hl, col) end
-
-  vim.api.nvim_set_hl(0, 'TSTypeDefinition', {fg = colors.vibrant_green})
-  vim.api.nvim_set_hl(0, 'typescriptTSType', {fg = colors.vibrant_green})
-
-  -- '<' and '>' in html
-  vim.api.nvim_set_hl(0, 'TSTagDelimiter', {fg = "#ff9ff5"})
-
-  -- <TAGNAME/>
-  vim.api.nvim_set_hl(0, 'TSTag', {fg = colors.dark_purple})
-  vim.api.nvim_set_hl(0, 'tsxTSTag', {fg = colors.dark_purple})
-
-  -- <div attribute="" />
-  vim.api.nvim_set_hl(0, 'TSTagAttribute', {fg = "#f0d197"})
-
-  vim.api.nvim_set_hl(0, 'tsxTSConstructor', {fg = colors.dark_purple})
-  vim.api.nvim_set_hl(0, 'typescriptTSConstructor', {fg = colors.blue})
-
-  -- const THING = ''
-  vim.api.nvim_set_hl(0, 'TSVariable', {fg = '#b2abe8'})
-  -- vim.api.nvim_set_hl(0, 'tsxTSVariable', {fg = cool.fg})
-
-  -- vim.api.nvim_set_hl(0, 'TSProperty', {fg = colors.})
-
-  --[[
-* **@variable** -> **tsxTSVariable** -> **TSVariable**
-* **@constructor** -> **tsxTSConstructor** -> **TSConstructor**
-* **@tag** -> **tsxTSTag** -> **TSTag**
-* **@constructor** -> **tsxTSConstructor** -> **TSConstructor**
-
-  --]]
-end
-
 local config = {
-
-  -- Configure AstroNvim updates
   updater = {
     remote = "origin", -- remote to use
     channel = "nightly", -- "stable" or "nightly"
@@ -222,8 +108,8 @@ local config = {
         "yamatsum/nvim-cursorline",
         config = function()
           require('nvim-cursorline').setup({
-            cursorline = {enable = false, timeout = 0, number = false},
-            cursorword = {enable = true, min_length = 1, hl = {underline = true}}
+            cursorline = {enable = false, timeout = 1000, number = false},
+            cursorword = {enable = true, min_length = 1, timeout = 100, hl = {underline = true}}
           })
         end
       }, {"mhartington/formatter.nvim", config = function() require("user.formatter-config") end}, {
@@ -238,7 +124,6 @@ local config = {
           })
         end
       }, -- { "christoomey/vim-tmux-navigator" },
-      -- {"romgrk/doom-one.vim"}, -- colorscheme
       {
         "NTBBloodbath/doom-one.nvim",
         config = function()
@@ -575,7 +460,8 @@ local config = {
       ["<S-Down>"] = {"<cmd>resize +2<cr>", desc = "Resize split down"},
       ["<S-Left>"] = {"<cmd>vertical resize -2<cr>", desc = "Resize split left"},
       ["<S-Right>"] = {"<cmd>vertical resize +2<cr>", desc = "Resize split right"},
-      ["<leader>G"] = {"<cmd>lua require('neogit').open()<cr>", desc = "open neogit"}
+      ["<leader>G"] = {"<cmd>lua require('neogit').open()<cr>", desc = "open neogit"},
+      ["<leader>xx"] = {"<cmd>lua R(vim.fn.expand('%'))<cr>", desc = "reload current lua file"}
     },
     t = {
       -- setting a mapping to false will disable it
@@ -622,7 +508,12 @@ local config = {
       end
     })
 
-    themeTelescope()
+    require('user.globals')
+    require('user.nvim-dev')
+    local theme = require("user.theme")
+    theme.theme_telescope()
+    theme.theme_syntax()
+
     -- Set up custom filetypes
     vim.filetype.add {
       extension = {lyaml = "yaml"}

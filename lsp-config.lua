@@ -1,5 +1,6 @@
 local util = require("lspconfig/util")
 local Job = require("plenary.job")
+local myutils = require("user.utils")
 
 local function getLogPath() return vim.lsp.get_log_path() end
 
@@ -17,22 +18,10 @@ local function getTsserverPath()
   return result
 end
 
-local function getIsHubspotMachine()
-  local result = ""
-  Job:new({
-    command = "ls",
-    args = {vim.env.HOME .. "/.hubspot"},
-    on_exit = function(_, return_val) result = return_val end
-  }):sync()
-
-  return result == 0
-end
-
 local function customPublishDiagnosticFunction(_, result, ctx, conf)
   local filter = function(fun, t)
     local res = {}
     for _, item in ipairs(t) do if fun(item) then res[#res + 1] = item end end
-
     return res
   end
   local raw_diagnostics = result.diagnostics
@@ -44,26 +33,18 @@ local function customPublishDiagnosticFunction(_, result, ctx, conf)
   end, raw_diagnostics)
 
   result.diagnostics = filtered_diagnostics
-
   return vim.lsp.diagnostic.on_publish_diagnostics(_, result, ctx, conf)
 end
 
--- The nvim-cmp almost supports LSP's capabilities so You should advertise it to LSP servers..
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
 
-function conditional_func(func, condition, ...)
-  if (condition == nil and true or condition) and type(func) == "function" then return func(...) end
-end
-
-function create_on_attach(server_name)
+local function create_on_attach(server_name)
   local server = require("lspconfig")[server_name]
   local old_on_attach = server.on_attach
   local custom_on_attach = function(client, bufnr)
-    conditional_func(old_on_attach, true, client, bufnr)
+    myutils.conditional_func(old_on_attach, true, client, bufnr)
     local bufopts = {noremap = true, silent = true, buffer = bufnr}
-
-    -- vim.keymap.set('n', '<leader><S-D>', "<cmd>lua require('telescope.builtin').lsp_type_definitions({ jump_type = 'never' })<cr>", bufopts)
     vim.api.nvim_create_autocmd("CursorHold", {
       buffer = bufnr,
       callback = function()
@@ -83,7 +64,7 @@ local lsp_flags = {debounce_text_changes = 500}
 
 local servers = {
   ["tsserver"] = function(custom_on_attach)
-    if getIsHubspotMachine() then
+    if myutils.is_hubspot_machine then
       return {
         flags = lsp_flags,
         cmd = {
@@ -134,7 +115,4 @@ for server_name, setupFN in pairs(servers) do
   local custom_on_attach = create_on_attach(server_name)
   require("lspconfig")[server_name].setup(setupFN(custom_on_attach))
 end
-
--- vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, {border = "single"})
--- vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {border = "single"})
 
