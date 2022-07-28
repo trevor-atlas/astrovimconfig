@@ -81,6 +81,9 @@ M.theme_syntax = function()
 
   -- const THING = ''
   vim.api.nvim_set_hl(0, 'TSVariable', {fg = '#b2abe8'})
+
+  -- //comments
+  vim.api.nvim_set_hl(0, 'TSComment', {fg = '#eaaf8f'})
 end
 
 M.theme_telescope = function()

@@ -100,6 +100,8 @@ local config = {
       --   end,
       -- },
 
+      -- jade/pug syntax
+      -- {"digitaltoad/vim-pug.git"},
       {
         'TimUntersberger/neogit',
         requires = 'nvim-lua/plenary.nvim',
@@ -507,6 +509,7 @@ local config = {
 
     require('user.globals')
     require('user.nvim-dev')
+    require('user.ts-config')
     local theme = require("user.theme")
     theme.theme_telescope()
     theme.theme_syntax()
