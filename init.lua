@@ -251,6 +251,7 @@ local config = {
       c.filesystem.filtered_items.hide_by_name = {"node_modules", ".DS_Store"}
       c.filesystem.filtered_items.never_show = {".DS_Store", "thumbs.db"}
       c.close_if_last_window = false
+      c.window.mappings = {["<space>"] = false}
       return c
     end,
     bufferline = function(c)
