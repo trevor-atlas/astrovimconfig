@@ -30,7 +30,7 @@ function M.dirname(filepath)
   return result, is_changed
 end
 
-function M.find_root_git_dir(bufnr, is_root_path)
+function M.find_root_git_dir()
   local git_root = ""
   Job:new({
     command = "git",

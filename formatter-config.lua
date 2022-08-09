@@ -1,18 +1,9 @@
 local path_sep = vim.loop.os_uname().sysname == "Windows" and "\\" or "/"
 local function path_join(...) return table.concat(vim.tbl_flatten {...}, path_sep) end
 
+local utils = require('user.utils')
+
 local Job = require("plenary.job")
-
-local function getIsHubspotMachine()
-  local result = ""
-  Job:new({
-    command = "ls",
-    args = {vim.env.HOME .. "/.hubspot"},
-    on_exit = function(_, return_val) result = return_val end
-  }):sync()
-
-  return result == 0
-end
 
 local get_current_root_dir = function()
 
@@ -55,23 +46,26 @@ local get_current_root_dir = function()
   return root_dir
 end
 
-local isHubspotMachine = getIsHubspotMachine()
-local function get_prettier_executable()
-  if isHubspotMachine then
+local function get_prettier_executable(root_dir)
+  if utils.is_hubspot_machine then
     return "~/.bpm/packages/hs-prettier/channels/default/prettier-config-hubspot/bin/hs-prettier.js"
   end
-  return "prettier"
+  if utils.is_dir(path_join(root_dir, 'node_modules', 'prettier')) then
+    return path_join(root_dir, 'node_modules', 'prettier', 'bin-prettier.js')
+  end
+  return path_join('~', 'node_modules', 'prettier', 'bin-prettier.js')
 end
 
-local prettier_executable = get_prettier_executable()
-
 local function prettier_config()
-  local rootDir = get_current_root_dir()
-  local config_path = isHubspotMachine and path_join(rootDir, 'prettier.config.js') or "~/prettier.config.js"
-  local exe_path = path_join(rootDir, 'node_modules', 'prettier', 'bin-prettier.js')
+  local bufnr = vim.api.nvim_get_current_buf()
+  local root_dir = utils.buffer_find_file_dir(bufnr, 'prettier.config.js')
+  if not root_dir or root_dir == '' then rootDir = utils.find_root_git_dir() end
+
+  local prettier_executable = get_prettier_executable(root_dir)
+  local config_path = utils.is_hubspot_machine and path_join(root_dir, 'prettier.config.js') or "~/prettier.config.js"
 
   return {
-    exe = prettier_executable, -- exe_path,
+    exe = prettier_executable,
     args = {"--stdin-filepath", vim.api.nvim_buf_get_name(0), '--config', config_path},
     stdin = true
   }
