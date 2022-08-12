@@ -16,7 +16,7 @@ local config = {
   },
 
   -- Set colorscheme
-  colorscheme = "doom-one", -- "default_theme",
+  colorscheme = "tokyonight", -- "default_theme",
 
   -- set vim options here (vim.<first_key>.<second_key> =  value)
   options = {
@@ -29,8 +29,8 @@ local config = {
     g = {
       mapleader = " ", -- sets vim.g.mapleader
       neovide_refresh_rate = 120,
-      neovide_cursor_vfx_mode = "sonicboom",
-      doom_one_terminal_colors = true
+      neovide_cursor_vfx_mode = "sonicboom"
+      -- doom_one_terminal_colors = true
     },
     o = {guifont = "JetBrainsMono Nerd Font:h18", updatetime = 250}
   },
@@ -102,6 +102,8 @@ local config = {
 
       -- jade/pug syntax
       -- {"digitaltoad/vim-pug.git"},
+
+      {'folke/tokyonight.nvim'},
       {
         'TimUntersberger/neogit',
         requires = 'nvim-lua/plenary.nvim',
@@ -123,35 +125,6 @@ local config = {
             auto_session_enable_last_session = true,
             auto_save_enabled = true,
             auto_session_enabled = true
-          })
-        end
-      }, -- { "christoomey/vim-tmux-navigator" },
-      {
-        "NTBBloodbath/doom-one.nvim",
-        config = function()
-          require('doom-one').setup({
-            cursor_coloring = true,
-            terminal_colors = false,
-            italic_comments = true,
-            enable_treesitter = true,
-            transparent_background = false,
-            pumblend = {enable = true, transparency_amount = 20},
-            plugins_integrations = {
-              neorg = true,
-              barbar = true,
-              bufferline = true,
-              gitgutter = true,
-              gitsigns = true,
-              telescope = false,
-              neogit = true,
-              nvim_tree = true,
-              dashboard = true,
-              startify = true,
-              whichkey = true,
-              indent_blankline = true,
-              vim_illuminate = true,
-              lspsaga = false
-            }
           })
         end
       }, {"nvim-treesitter/playground"}, {
@@ -329,7 +302,10 @@ local config = {
       ensure_installed = "all", -- {"sumneko_lua"}
       ignore_install = {"phpdoc"}
     },
-    packer = {compile_path = vim.fn.stdpath "data" .. "/packer_compiled.lua"}
+    packer = {compile_path = vim.fn.stdpath "data" .. "/packer_compiled.lua"},
+    feline = function(c)
+      table.insert(c.components.active[1], {short_provider = {name = 'file_info', opts = {type = 'short-path'}}})
+    end
   },
 
   -- LuaSnip Options

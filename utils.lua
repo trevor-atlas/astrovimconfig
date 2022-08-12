@@ -35,7 +35,7 @@ function M.find_root_git_dir()
   Job:new({
     command = "git",
     args = {"rev-parse", "--show-toplevel"},
-    on_exit = function(results, _) git_root = results._stdout_results[1] end
+    on_exit = function(results, _) git_root = results and results._stdout_results[1] and results._stdout_results[1] or ""  end
   }):sync()
   local result, _ = string.gsub(git_root, "[\r\n]", "")
   return result

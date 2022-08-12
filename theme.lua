@@ -62,31 +62,32 @@ M.cool = {
   diff_text = "#265478"
 }
 
-M.theme_syntax = function()
+function M.theme_syntax()
+  -- interfaces
   vim.api.nvim_set_hl(0, 'TSTypeDefinition', {fg = M.colors.vibrant_green})
   vim.api.nvim_set_hl(0, 'typescriptTSType', {fg = M.colors.vibrant_green})
 
   -- '<' and '>' in html
-  vim.api.nvim_set_hl(0, 'TSTagDelimiter', {fg = "#ff9ff5"})
+  -- vim.api.nvim_set_hl(0, 'TSTagDelimiter', {fg = "#ff9ff5"})
 
   -- <TAGNAME/>
-  vim.api.nvim_set_hl(0, 'TSTag', {fg = M.colors.dark_purple})
-  vim.api.nvim_set_hl(0, 'tsxTSTag', {fg = M.colors.dark_purple})
+  -- vim.api.nvim_set_hl(0, 'TSTag', {fg = M.colors.dark_purple})
+  -- vim.api.nvim_set_hl(0, 'tsxTSTag', {fg = M.colors.dark_purple})
 
   -- <div attribute="" />
   vim.api.nvim_set_hl(0, 'TSTagAttribute', {fg = "#f0d197"})
 
-  vim.api.nvim_set_hl(0, 'tsxTSConstructor', {fg = M.colors.dark_purple})
-  vim.api.nvim_set_hl(0, 'typescriptTSConstructor', {fg = M.colors.blue})
+  -- vim.api.nvim_set_hl(0, 'tsxTSConstructor', {fg = M.colors.dark_purple})
+  -- vim.api.nvim_set_hl(0, 'typescriptTSConstructor', {fg = M.colors.blue})
 
   -- const THING = ''
-  vim.api.nvim_set_hl(0, 'TSVariable', {fg = '#b2abe8'})
+  -- vim.api.nvim_set_hl(0, 'TSVariable', {fg = '#b2abe8'})
 
   -- //comments
   vim.api.nvim_set_hl(0, 'TSComment', {fg = '#eaaf8f'})
 end
 
-M.theme_telescope = function()
+function M.theme_telescope()
   local telescopetheme = {
     TelescopeBorder = {fg = M.colors.darker_black, bg = M.colors.darker_black},
     FloatBorder = {fg = M.colors.darker_black, bg = M.colors.darker_black},
