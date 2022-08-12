@@ -314,10 +314,10 @@ local config = {
       return c
     end,
     treesitter = {ensure_installed = "all", ignore_install = {"phpdoc"}},
-    packer = {compile_path = vim.fn.stdpath "data" .. "/packer_compiled.lua"},
-    feline = function(c)
-      table.insert(c.components.active[1], {short_provider = {name = 'file_info', opts = {type = 'short-path'}}})
-    end
+    packer = {compile_path = vim.fn.stdpath "data" .. "/packer_compiled.lua"}
+    --[[ feline = function(c) ]]
+    --[[   table.insert(c.components.active[1], {short_provider = {name = 'file_info', opts = {type = 'short-path'}}}) ]]
+    --[[ end ]]
   },
 
   -- LuaSnip Options
@@ -376,12 +376,13 @@ local config = {
     -- end,
 
     -- override the lsp installer server-registration function
-    -- server_registration = function(server, opts)
-    --   require("lspconfig")[server].setup(opts)
-    -- end,
+    --[[ server_registration = function(server, opts) ]]
+    -- require("lspconfig")[server].setup(opts)
+    --[[ end, ]]
 
     -- Add overrides for LSP server settings, the keys are the name of the server
     ["server-settings"] = {
+      tsserver = require("user.lsp-config").tsserver()
       -- example for addings schemas to yamlls
       -- yamlls = {
       --   settings = {
@@ -496,7 +497,6 @@ local config = {
 
     require('user.nvim-dev')
     require('user.ts-config')
-    require("user.lsp-config")
     local theme = require("user.theme")
     theme.theme_telescope()
     theme.theme_syntax()

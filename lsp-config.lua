@@ -1,4 +1,3 @@
-local util = require("lspconfig/util")
 local Job = require("plenary.job")
 local myutils = require("user.utils")
 
@@ -39,31 +38,26 @@ end
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
 
-local function create_on_attach(server_name)
-  local server = require("lspconfig")[server_name]
-  local old_on_attach = server.on_attach
-  return function(client, bufnr)
-    myutils.conditional_func(old_on_attach, true, client, bufnr)
-    vim.api.nvim_create_autocmd("CursorHold", {
-      buffer = bufnr,
-      callback = function()
-        vim.diagnostic.open_float(nil, {
-          focusable = false,
-          close_events = {"BufLeave", "CursorMoved", "InsertEnter", "FocusLost"},
-          border = 'rounded',
-          source = 'always',
-          prefix = ' ',
-          scope = 'cursor'
-        })
-      end
-    })
-  end
+on_attach = function(client, bufnr)
+  vim.api.nvim_create_autocmd("CursorHold", {
+    buffer = bufnr,
+    callback = function()
+      vim.diagnostic.open_float(nil, {
+        focusable = false,
+        close_events = {"BufLeave", "CursorMoved", "InsertEnter", "FocusLost"},
+        border = 'rounded',
+        source = 'always',
+        prefix = ' ',
+        scope = 'cursor'
+      })
+    end
+  })
 end
 
 local lsp_flags = {debounce_text_changes = 500}
 
 local servers = {
-  ["tsserver"] = function(custom_on_attach)
+  ["tsserver"] = function()
     local root_dir = myutils.find_root_git_dir;
     local init_options = {hostInfo = "neovim"}
     local filetypes = {
@@ -76,10 +70,10 @@ local servers = {
       })
     }
     local default_config = {
-      root_dir = root_dir, -- util.root_pattern(".git"),
+      root_dir = root_dir,
       init_options = init_options,
-      flags = lsp_flags,
-      on_attach = custom_on_attach,
+      --[[ flags = lsp_flags, ]]
+      on_attach = on_attach,
       handlers = handlers,
       capabilities = capabilities,
       filetypes = filetypes
@@ -95,18 +89,18 @@ local servers = {
   end,
 
   -- npm install -g graphql-language-service-cli
-  ["graphql"] = function(custom_on_attach)
-    return {flags = lsp_flags, on_attach = custom_on_attach, capabilities = capabilities}
-  end,
+  --[[ ["graphql"] = function(custom_on_attach) ]]
+  --[[   return {flags = lsp_flags, on_attach = custom_on_attach, capabilities = capabilities} ]]
+  --[[ end, ]]
 
   -- yarn global add yaml-language-server
-  ["yamlls"] = function(custom_on_attach)
-    return {flags = lsp_flags, on_attach = custom_on_attach, capabilities = capabilities}
-  end
+  ["yamlls"] = function(custom_on_attach) return {on_attach = on_attach} end
 }
 
-for server_name, setupFN in pairs(servers) do
-  local custom_on_attach = create_on_attach(server_name)
-  require("lspconfig")[server_name].setup(setupFN(custom_on_attach))
-end
+return servers
+
+--[[ for server_name, setupFN in pairs(servers) do ]]
+--[[   local custom_on_attach = create_on_attach(server_name) ]]
+--[[   require("lspconfig")[server_name].setup(setupFN(custom_on_attach)) ]]
+--[[ end ]]
 
