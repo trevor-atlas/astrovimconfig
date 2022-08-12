@@ -42,9 +42,8 @@ capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
 local function create_on_attach(server_name)
   local server = require("lspconfig")[server_name]
   local old_on_attach = server.on_attach
-  local custom_on_attach = function(client, bufnr)
+  return function(client, bufnr)
     myutils.conditional_func(old_on_attach, true, client, bufnr)
-    local bufopts = {noremap = true, silent = true, buffer = bufnr}
     vim.api.nvim_create_autocmd("CursorHold", {
       buffer = bufnr,
       callback = function()
@@ -60,44 +59,39 @@ local function create_on_attach(server_name)
     })
   end
 end
+
 local lsp_flags = {debounce_text_changes = 500}
 
 local servers = {
   ["tsserver"] = function(custom_on_attach)
+    local root_dir = myutils.find_root_git_dir;
+    local init_options = {hostInfo = "neovim"}
+    local filetypes = {
+      "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx"
+    }
+    local handlers = {
+      ["textDocument/publishDiagnostics"] = vim.lsp.with(customPublishDiagnosticFunction, {
+        -- Disable virtual_text
+        -- virtual_text = false
+      })
+    }
+    local default_config = {
+      root_dir = root_dir, -- util.root_pattern(".git"),
+      init_options = init_options,
+      flags = lsp_flags,
+      on_attach = custom_on_attach,
+      handlers = handlers,
+      capabilities = capabilities,
+      filetypes = filetypes
+    }
     if myutils.is_hubspot_machine then
-      return {
-        flags = lsp_flags,
-        cmd = {
-          "typescript-language-server", "--log-level", -- A number indicating the log level (4 = log, 3 = info, 2 = warn, 1 = error). Defaults to `2`.
-          "2", "--tsserver-log-verbosity", "terse", -- Specify tsserver log verbosity (off, terse, normal, verbose). Defaults to `normal`. example: --tsserver-log-verbosity=verbose
-          "--tsserver-log-file", getLogPath(), "--tsserver-path", getTsserverPath(), "--stdio"
-        },
-        init_options = {hostInfo = "neovim"},
-        on_attach = custom_on_attach,
-        root_dir = util.root_pattern(".git"),
-        filetypes = {
-          "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx"
-        },
-        handlers = {
-          ["textDocument/publishDiagnostics"] = vim.lsp.with(customPublishDiagnosticFunction, {
-            -- Disable virtual_text
-            -- virtual_text = false
-          })
-        },
-        capabilities = capabilities
-      }
-    else
-      return {
-        root_dir = util.root_pattern(".git"),
-        init_options = {hostInfo = "neovim"},
-        flags = lsp_flags,
-        on_attach = custom_on_attach,
-        capabilities = capabilities,
-        filetypes = {
-          "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx"
-        }
+      default_config.cmd = {
+        "typescript-language-server", "--log-level", -- A number indicating the log level (4 = log, 3 = info, 2 = warn, 1 = error). Defaults to `2`.
+        "2", "--tsserver-log-verbosity", "terse", -- Specify tsserver log verbosity (off, terse, normal, verbose). Defaults to `normal`. example: --tsserver-log-verbosity=verbose
+        "--tsserver-log-file", getLogPath(), "--tsserver-path", getTsserverPath(), "--stdio"
       }
     end
+    return default_config
   end,
 
   -- npm install -g graphql-language-service-cli

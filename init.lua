@@ -1,3 +1,4 @@
+require('user.globals')
 local config = {
   updater = {
     remote = "origin", -- remote to use
@@ -24,7 +25,12 @@ local config = {
       relativenumber = true, -- sets vim.opt.relativenumber
       scrolloff = 999,
       clipboard = "unnamedplus", -- copy/paste to system clipboard
-      swapfile = false
+      swapfile = false,
+      -- I prefer '>' and '<' to move text the same distance as the tab-key.
+      -- by settin shiftwidth=0 you tell vim that you always want it to match tabstop
+      shiftwidth = 0,
+      tabstop = 2,
+      softtabstop = 2
     },
     g = {
       mapleader = " ", -- sets vim.g.mapleader
@@ -100,10 +106,11 @@ local config = {
       --   end,
       -- },
 
-      -- jade/pug syntax
-      -- {"digitaltoad/vim-pug.git"},
-
       {'folke/tokyonight.nvim'},
+      {
+        "ziontee113/icon-picker.nvim",
+        config = function() require("icon-picker").setup({disable_legacy_commands = true}) end
+      },
       {
         'TimUntersberger/neogit',
         requires = 'nvim-lua/plenary.nvim',
@@ -228,12 +235,21 @@ local config = {
       return c
     end,
     bufferline = function(c)
+      c.options.show_buffer_close_icons = false
+      c.options.show_close_icon = false
       c.options.separator_style = "slant"
       c.options.tab_size = 30
       c.options.max_name_length = 24
       return c
     end,
-    lspconfig = function() require("user.lsp-config") end,
+    -- use mason-lspconfig to configure LSP installations
+    ["mason-lspconfig"] = { -- overrides `require("mason-lspconfig").setup(...)`
+      ensure_installed = {"sumneko_lua"}
+    },
+    -- use mason-tool-installer to configure DAP/Formatters/Linter installation
+    ["mason-tool-installer"] = { -- overrides `require("mason-tool-installer").setup(...)`
+      ensure_installed = {"prettier", "stylua"}
+    },
     telescope = function(c)
       local actions = require "telescope.actions"
       c.defaults.vimgrep_arguments = {
@@ -298,10 +314,6 @@ local config = {
       return c
     end,
     treesitter = {ensure_installed = "all", ignore_install = {"phpdoc"}},
-    ["nvim-lsp-installer"] = {
-      ensure_installed = "all", -- {"sumneko_lua"}
-      ignore_install = {"phpdoc"}
-    },
     packer = {compile_path = vim.fn.stdpath "data" .. "/packer_compiled.lua"},
     feline = function(c)
       table.insert(c.components.active[1], {short_provider = {name = 'file_info', opts = {type = 'short-path'}}})
@@ -331,12 +343,6 @@ local config = {
         -- },
         ["<leader>"] = {
           ["l"] = {["x"] = {"<cmd>TSHighlightCapturesUnderCursor<cr>", "describe token under cursor"}},
-          ["H"] = {
-            name = "HubSpot",
-            ["t"] = {function() require('hubspot-js-utils').test_file() end, "open current file's test if it exists"}
-
-          },
-
           ["-"] = {function() vim.cmd("split") end, "Split Horizontal"},
           ["|"] = {function() vim.cmd("vsplit") end, "Split Vertical"}
         }
@@ -484,24 +490,44 @@ local config = {
       end
     })
 
-    require('user.globals')
+    local fmt_on_save_group = vim.api.nvim_create_augroup("MyFormatOnSave", {clear = true})
+    vim.api.nvim_create_autocmd("BufWritePre",
+                                {group = fmt_on_save_group, pattern = {"*.rs"}, callback = vim.lsp.buf.formatting_sync})
+
     require('user.nvim-dev')
     require('user.ts-config')
+    require("user.lsp-config")
     local theme = require("user.theme")
     theme.theme_telescope()
     theme.theme_syntax()
 
+    vim.g.neovide_input_use_logo = 1
+    vim.api.nvim_set_keymap('', '<D-v>', '+p<CR>', {noremap = true, silent = true})
+    vim.api.nvim_set_keymap('!', '<D-v>', '<C-R>+', {noremap = true, silent = true})
+    vim.api.nvim_set_keymap('t', '<D-v>', '<C-R>+', {noremap = true, silent = true})
+    vim.api.nvim_set_keymap('v', '<D-v>', '<C-R>+', {noremap = true, silent = true})
+
     -- Set up custom filetypes
-    vim.filetype.add {
+    vim.filetype.add({
       extension = {lyaml = "yaml"}
       -- filename = {
-      --   ["Foofile"] = "fooscript",
+      --   [""] = "fooscript",
       -- },
       -- pattern = {
       --   ["~/%.config/foo/.*"] = "fooscript",
       -- },
-    }
+    })
+
+    vim.filetype.add({extension = {scpt = "javascript"}})
   end
 }
+
+local utils = require('user.utils')
+if utils.is_hubspot_machine then
+  config["which-key"].register_mappings.n["<leader>"].H = {
+    name = "HubSpot",
+    ["t"] = {function() require('hubspot-js-utils').test_file() end, "open current file's test if it exists"}
+  }
+end
 
 return config
