@@ -106,6 +106,9 @@ local config = {
       --   end,
       -- },
 
+      ["nvim-window-picker"] = {disable = true},
+      ["window-picker"] = {disable = true},
+
       {'folke/tokyonight.nvim'},
       {
         "ziontee113/icon-picker.nvim",
@@ -115,7 +118,8 @@ local config = {
         'TimUntersberger/neogit',
         requires = 'nvim-lua/plenary.nvim',
         config = function() require('neogit').setup({}) end
-      }, {
+      },
+      {
         "yamatsum/nvim-cursorline",
         config = function()
           require('nvim-cursorline').setup({
@@ -123,7 +127,9 @@ local config = {
             cursorword = {enable = true, min_length = 1, timeout = 100, hl = {underline = true}}
           })
         end
-      }, {"mhartington/formatter.nvim", config = function() require("user.formatter-config") end}, {
+      },
+      {"mhartington/formatter.nvim", config = function() require("user.formatter-config") end},
+      {
         "rmagatti/auto-session",
         config = function()
           require('auto-session').setup({
@@ -134,31 +140,39 @@ local config = {
             auto_session_enabled = true
           })
         end
-      }, {"nvim-treesitter/playground"}, {
+      },
+      {"nvim-treesitter/playground"},
+      {
         "phaazon/hop.nvim", -- autojump
         branch = "v2", -- optional but strongly recommended
         config = function()
           -- you can configure Hop the way you like here; see :h hop-config
           require("hop").setup({keys = "etovxqpdygfblzhckisuran"})
         end
-      }, {
+      },
+      {
         "kylechui/nvim-surround",
         config = function()
           require("nvim-surround").setup({}) -- Configuration here, or leave empty to use defaults
         end
-      }, {"bobrown101/plugin-utils.nvim"},
-      {"numToStr/Navigator.nvim", config = function() require('Navigator').setup() end}, {
+      },
+      {"bobrown101/plugin-utils.nvim"},
+      {"numToStr/Navigator.nvim", config = function() require('Navigator').setup() end},
+      {
         "bobrown101/asset-bender.nvim",
         requires = {"bobrown101/plugin-utils.nvim"},
         config = function() require("asset-bender").setup({}) end
-      }, {
+      },
+      {
         'bobrown101/nvim_cmp_hs_translation_source',
         config = function() require('nvim_cmp_hs_translation_source').setup() end
-      }, {
+      },
+      {
         "bobrown101/hubspot-js-utils.nvim",
         requires = {"bobrown101/plugin-utils.nvim"},
         config = function() require("hubspot-js-utils").setup({}) end
-      }, {
+      },
+      {
         "akinsho/git-conflict.nvim",
         config = function()
           require("git-conflict").setup({
@@ -170,7 +184,8 @@ local config = {
             }
           })
         end
-      }, {
+      },
+      {
         "nvim-treesitter/nvim-treesitter-context",
         config = function()
           require'treesitter-context'.setup {
@@ -210,7 +225,8 @@ local config = {
             mode = 'cursor' -- Line used to calculate context. Choices: 'cursor', 'topline'
           }
         end
-      }, {
+      },
+      {
         --[[
         Open agenda prompt: <leader>oa
         Open capture prompt: <leader>oc
