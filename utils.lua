@@ -85,14 +85,9 @@ function M.determine_os()
   return "Unknown"
 end
 
--- P(M.buffer_find_file_dir(vim.fn.bufnr(), 'prettier.config.js'))
--- P(M.buffer_find_file(vim.fn.bufnr(), 'prettier.config.js'))
-
 M.is_hubspot_machine = M.dir_exists(vim.env.HOME .. "/.hubspot")
 M.os = M.determine_os()
 M.is_wsl = M.os == "WSL"
 M.is_macos = M.os == "Darwin"
-
-P(M.is_hubspot_machine)
 
 return M
