@@ -110,8 +110,144 @@ local config = {
       --     require("lsp_signature").setup()
       --   end,
       -- },
+      -- ##
 
       { 'f-person/git-blame.nvim' },
+      {'simrat39/inlay-hints.nvim', setup = function() require("inlay-hints").setup() end}, {
+        'simrat39/rust-tools.nvim',
+        requires = 'nvim-lua/plenary.nvim',
+        config = function()
+          local ih = require("inlay-hints")
+          local capabilities = vim.lsp.protocol.make_client_capabilities()
+          capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
+
+          local rt = require("rust-tools")
+
+          rt.setup({
+            tools = {
+              inlay_hints = {
+                auto = true,
+                only_current_line = true,
+                -- whether to show parameter hints with the inlay hints or not
+                -- default: true
+                show_parameter_hints = false
+              },
+              on_initialized = function()
+                -- ih.set_all()
+              end
+            },
+            server = {
+              on_attach = function(client, bufnr)
+                -- ih.on_attach(client, bufnr)
+                vim.keymap.set("n", "<C-space>", rt.hover_actions.hover_actions, {buffer = bufnr})
+
+                vim.keymap.set("n", "<Leader>a", rt.code_action_group.code_action_group, {buffer = bufnr})
+              end
+            },
+            dap = {
+              adapter = require('rust-tools.dap').get_codelldb_adapter(os.getenv('HOME')
+                                                                           .. "/repos/codelldb/extension/adapter/codelldb",
+                                                                       os.getenv('HOME')
+                                                                           .. "/repos/codelldb/extension/lldb/lib/liblldb.dylib")
+            }
+          })
+        end
+      }, {
+        'mfussenegger/nvim-dap',
+        config = function()
+          local dap = require('dap')
+          dap.adapters.chrome = {
+            type = "executable",
+            command = "node",
+            args = {os.getenv("HOME") .. "/repos/vscode-chrome-debug/out/src/chromeDebug.js"}
+          }
+          dap.configurations.javascriptreact = { -- change this to javascript if needed
+            {
+              type = "chrome",
+              request = "attach",
+              program = "${file}",
+              cwd = vim.fn.getcwd(),
+              sourceMaps = true,
+              protocol = "inspector",
+              port = 9222,
+              webRoot = "${workspaceFolder}"
+            }
+          }
+          dap.configurations.javascript = dap.configurations.javascriptreact
+
+          dap.configurations.typescriptreact = { -- change to typescript if needed
+            {
+              type = "chrome",
+              request = "attach",
+              program = "${file}",
+              cwd = vim.fn.getcwd(),
+              sourceMaps = true,
+              protocol = "inspector",
+              port = 9222,
+              webRoot = "${workspaceFolder}"
+            }
+          }
+          dap.configurations.typescript = dap.configurations.typescriptreact
+        end
+      }, {
+        "rcarriga/nvim-dap-ui",
+        requires = {"mfussenegger/nvim-dap"},
+        config = function()
+          local dapui = require('dapui')
+          dapui.setup({
+            icons = {expanded = "▾", collapsed = "▸"},
+            mappings = {
+              -- Use a table to apply multiple mappings
+              expand = {"<CR>", "<2-LeftMouse>"},
+              open = "o",
+              remove = "d",
+              edit = "e",
+              repl = "r",
+              toggle = "t"
+            },
+            -- Expand lines larger than the window
+            -- Requires >= 0.7
+            expand_lines = vim.fn.has("nvim-0.7"),
+            -- Layouts define sections of the screen to place windows.
+            -- The position can be "left", "right", "top" or "bottom".
+            -- The size specifies the height/width depending on position. It can be an Int
+            -- or a Float. Integer specifies height/width directly (i.e. 20 lines/columns) while
+            -- Float value specifies percentage (i.e. 0.3 - 30% of available lines/columns)
+            -- Elements are the elements shown in the layout (in order).
+            -- Layouts are opened in order so that earlier layouts take priority in window sizing.
+            layouts = {
+              {
+                elements = {
+                  -- Elements can be strings or table with id and size keys.
+                  {id = "scopes", size = 0.25}, "breakpoints", "stacks", "watches"
+                },
+                size = 40, -- 40 columns
+                position = "left"
+              }, {
+                elements = {"repl", "console"},
+                size = 0.25, -- 25% of total lines
+                position = "bottom"
+              }
+            },
+            floating = {
+              max_height = nil, -- These can be integers or a float between 0 and 1.
+              max_width = nil, -- Floats will be treated as percentage of your screen.
+              border = "single", -- Border style. Can be "single", "double" or "rounded"
+              mappings = {close = {"q", "<Esc>"}}
+            },
+            windows = {indent = 1},
+            render = {
+              max_type_length = nil -- Can be integer or nil.
+            }
+          })
+
+          local dap = require('dap')
+          dap.listeners.after.event_initialized['dapui_config'] = function() dapui.open() end
+          dap.listeners.before.event_terminated['dapui_config'] = function() dapui.close() end
+          dap.listeners.before.event_exited['dapui_config'] = function() dapui.close() end
+
+        end
+      }, {'folke/tokyonight.nvim'},
       {
         'projekt0n/github-nvim-theme',
         config = function()
@@ -127,8 +263,7 @@ local config = {
         'TimUntersberger/neogit',
         requires = 'nvim-lua/plenary.nvim',
         config = function() require('neogit').setup({}) end
-      },
-      {
+      }, {
         "yamatsum/nvim-cursorline",
         config = function()
           require('nvim-cursorline').setup({
@@ -158,30 +293,20 @@ local config = {
           -- you can configure Hop the way you like here; see :h hop-config
           require("hop").setup({keys = "etovxqpdygfblzhckisuran"})
         end
-      },
-      {
+      }, {
         "kylechui/nvim-surround",
         config = function()
           require("nvim-surround").setup({}) -- Configuration here, or leave empty to use defaults
         end
-      },
-      {"bobrown101/plugin-utils.nvim"},
-      {"numToStr/Navigator.nvim", config = function() require('Navigator').setup() end},
-      {
-        "bobrown101/asset-bender.nvim",
-        requires = {"bobrown101/plugin-utils.nvim"},
-        config = function() require("asset-bender").setup({}) end
-      },
-      {
+      }, {"bobrown101/plugin-utils.nvim"},
+      {"numToStr/Navigator.nvim", config = function() require('Navigator').setup() end}, {
         'bobrown101/nvim_cmp_hs_translation_source',
         config = function() require('nvim_cmp_hs_translation_source').setup() end
-      },
-      {
+      }, {
         "bobrown101/hubspot-js-utils.nvim",
         requires = {"bobrown101/plugin-utils.nvim"},
         config = function() require("hubspot-js-utils").setup({}) end
-      },
-      {
+      }, {
         "akinsho/git-conflict.nvim",
         config = function()
           require("git-conflict").setup({
@@ -193,8 +318,7 @@ local config = {
             }
           })
         end
-      },
-      {
+      }, {
         "nvim-treesitter/nvim-treesitter-context",
         config = function()
           require'treesitter-context'.setup {
@@ -234,8 +358,7 @@ local config = {
             mode = 'cursor' -- Line used to calculate context. Choices: 'cursor', 'topline'
           }
         end
-      },
-      {
+      }, {
         --[[
         Open agenda prompt: <leader>oa
         Open capture prompt: <leader>oc
@@ -273,7 +396,7 @@ local config = {
         return vim.fn.fnamemodify(buf.name, ':p:.')
       end
       c.options.max_name_length = 30
-      
+
       return P(c)
     end,
     -- use mason-lspconfig to configure LSP installations
@@ -442,7 +565,7 @@ local config = {
     i = {
 
       ["<C-t>"] = {"<cmd>tabnew<cr>", desc = "create buffer"},
-      -- relies on "bufdelete.nvim" 
+      -- relies on "bufdelete.nvim"
       ["<C-w>"] = {"<cmd>Bdelete<cr>", desc = "close buffer"},
       ["<C-s>"] = {"<cmd>w!<cr>", desc = "Save File"},
       ["<C-q>"] = {"<cmd>q<cr>", desc = "ctrl-q quit"}
@@ -468,6 +591,14 @@ local config = {
       ["<leader>bb"] = {"<cmd>lua require('telescope.builtin').buffers()<cr>", desc = "search buffers"},
       ["<leader>G"] = {"<cmd>lua require('neogit').open()<cr>", desc = "open neogit"},
 
+      -- DAP
+      ["<leader>B"] = {"<cmd>lua require('dap').toggle_breakpoint()<cr>"},
+      ["<leader>dr"] = {"<cmd>lua require('dap').step_out()<cr>"},
+      ["<F1>"] = {"<cmd>lua require('dap').continue()<cr>"},
+      ["<F2>"] = {"<cmd>lua require('dap').step_into()<cr>"},
+      ["<F3>"] = {"<cmd>lua require('dap').step_over()<cr>"},
+      ["<F4>"] = {"<cmd>lua require('dap').step_out()<cr>"},
+
       ["n"] = {"nzzzv", desc = "centered 'next' when searching"},
       ["N"] = {"Nzzzv", desc = "centered 'prev' when searching"},
       ["t"] = {":HopWord<cr>", desc = "jump to a character"},
@@ -479,6 +610,7 @@ local config = {
       ["<S-Down>"] = {"<cmd>resize +2<cr>", desc = "Resize split down"},
       ["<S-Left>"] = {"<cmd>vertical resize -2<cr>", desc = "Resize split left"},
       ["<S-Right>"] = {"<cmd>vertical resize +2<cr>", desc = "Resize split right"}
+
     },
     t = {
       -- setting a mapping to false will disable it
@@ -557,6 +689,7 @@ local config = {
 }
 
 local utils = require('user.utils')
+require('user.asset-bender')
 if utils.is_hubspot_machine then
   config["which-key"].register_mappings.n["<leader>"].H = {
     name = "HubSpot",

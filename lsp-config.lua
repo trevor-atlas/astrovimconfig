@@ -1,5 +1,7 @@
 local Job = require("plenary.job")
 local myutils = require("user.utils")
+local ih = require("inlay-hints")
+local util = require 'lspconfig/util'
 
 local function getLogPath() return vim.lsp.get_log_path() end
 
@@ -35,10 +37,11 @@ local function customPublishDiagnosticFunction(_, result, ctx, conf)
   return vim.lsp.diagnostic.on_publish_diagnostics(_, result, ctx, conf)
 end
 
-local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities)
+--[[ local capabilities = vim.lsp.protocol.make_client_capabilities() ]]
+--[[ capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities) ]]
 
-on_attach = function(client, bufnr)
+local on_attach = function(client, bufnr)
+  ih.on_attach(client, bufnr)
   vim.api.nvim_create_autocmd("CursorHold", {
     buffer = bufnr,
     callback = function()
@@ -56,27 +59,48 @@ end
 
 local lsp_flags = {debounce_text_changes = 500}
 
-local servers = {
+return {
   ["tsserver"] = function()
-    local root_dir = myutils.find_root_git_dir;
-    local init_options = {hostInfo = "neovim"}
-    local filetypes = {
-      "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx"
-    }
-    local handlers = {
-      ["textDocument/publishDiagnostics"] = vim.lsp.with(customPublishDiagnosticFunction, {
-        -- Disable virtual_text
-        -- virtual_text = false
-      })
-    }
+    local root_dir = function(pattern)
+      local cwd = vim.loop.cwd();
+      local root = util.root_pattern("package.json", "tsconfig.json", ".git")(pattern);
+      return root or cwd;
+    end;
     local default_config = {
       root_dir = root_dir,
-      init_options = init_options,
-      --[[ flags = lsp_flags, ]]
+      init_options = {hostInfo = "neovim"},
       on_attach = on_attach,
-      handlers = handlers,
-      capabilities = capabilities,
-      filetypes = filetypes
+      --[[ handlers = { ]]
+      --[[   ["textDocument/publishDiagnostics"] = vim.lsp.with(customPublishDiagnosticFunction, { ]]
+      --[[     -- Disable virtual_text ]]
+      --[[     -- virtual_text = false ]]
+      --[[   }) ]]
+      --[[ }, ]]
+      filetypes = {"javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx"},
+      settings = {
+        javascript = {
+          inlayHints = {
+            includeInlayEnumMemberValueHints = true,
+            includeInlayFunctionLikeReturnTypeHints = true,
+            includeInlayFunctionParameterTypeHints = true,
+            includeInlayParameterNameHints = "all", -- 'none' | 'literals' | 'all';
+            includeInlayParameterNameHintsWhenArgumentMatchesName = true,
+            includeInlayPropertyDeclarationTypeHints = true,
+            includeInlayVariableTypeHints = true
+          }
+        },
+        typescript = {
+          inlayHints = {
+            includeInlayEnumMemberValueHints = true,
+            includeInlayFunctionLikeReturnTypeHints = true,
+            includeInlayFunctionParameterTypeHints = true,
+            includeInlayParameterNameHints = "all", -- 'none' | 'literals' | 'all';
+            includeInlayParameterNameHintsWhenArgumentMatchesName = true,
+            includeInlayPropertyDeclarationTypeHints = true,
+            includeInlayVariableTypeHints = true
+          }
+        }
+      }
     }
     if myutils.is_hubspot_machine then
       default_config.cmd = {
@@ -86,21 +110,5 @@ local servers = {
       }
     end
     return default_config
-  end,
-
-  -- npm install -g graphql-language-service-cli
-  --[[ ["graphql"] = function(custom_on_attach) ]]
-  --[[   return {flags = lsp_flags, on_attach = custom_on_attach, capabilities = capabilities} ]]
-  --[[ end, ]]
-
-  -- yarn global add yaml-language-server
-  ["yamlls"] = function(custom_on_attach) return {on_attach = on_attach} end
+  end
 }
-
-return servers
-
---[[ for server_name, setupFN in pairs(servers) do ]]
---[[   local custom_on_attach = create_on_attach(server_name) ]]
---[[   require("lspconfig")[server_name].setup(setupFN(custom_on_attach)) ]]
---[[ end ]]
-
