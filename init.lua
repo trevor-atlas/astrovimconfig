@@ -17,7 +17,8 @@ local config = {
   },
 
   -- Set colorscheme
-  colorscheme = "tokyonight", -- "default_theme",
+  colorscheme = "github_dark", -- "default_theme",
+  --colorscheme = "tokyonight", -- "default_theme",
 
   -- set vim options here (vim.<first_key>.<second_key> =  value)
   options = {
@@ -34,7 +35,11 @@ local config = {
     },
     g = {
       mapleader = " ", -- sets vim.g.mapleader
-      neovide_refresh_rate = 120,
+      neovide_transparency = 0.9,
+      neovide_refresh_rate_idle = 5,
+      neovide_refresh_rate = 60,
+      neovide_floating_blur_amount_x = 2.0,
+      neovide_floating_blur_amount_y = 2.0,
       neovide_cursor_vfx_mode = "sonicboom"
       -- doom_one_terminal_colors = true
     },
@@ -106,14 +111,18 @@ local config = {
       --   end,
       -- },
 
-      ["nvim-window-picker"] = {disable = true},
-      ["window-picker"] = {disable = true},
+      { 'f-person/git-blame.nvim' },
+      {
+        'projekt0n/github-nvim-theme',
+        config = function()
+          require('github-theme').setup({
+        theme_style = "dark",
+        function_style = "italic"
+          })
+        end
+      },
 
       {'folke/tokyonight.nvim'},
-      {
-        "ziontee113/icon-picker.nvim",
-        config = function() require("icon-picker").setup({disable_legacy_commands = true}) end
-      },
       {
         'TimUntersberger/neogit',
         requires = 'nvim-lua/plenary.nvim',
@@ -129,18 +138,18 @@ local config = {
         end
       },
       {"mhartington/formatter.nvim", config = function() require("user.formatter-config") end},
-      {
-        "rmagatti/auto-session",
-        config = function()
-          require('auto-session').setup({
-            log_level = 'info',
-            auto_session_suppress_dirs = {'~/'},
-            auto_session_enable_last_session = true,
-            auto_save_enabled = true,
-            auto_session_enabled = true
-          })
-        end
-      },
+      -- {
+      --   "rmagatti/auto-session",
+      --   config = function()
+      --     require('auto-session').setup({
+      --       log_level = 'info',
+      --       auto_session_suppress_dirs = {'~/'},
+      --       auto_session_enable_last_session = true,
+      --       auto_save_enabled = true,
+      --       auto_session_enabled = true
+      --     })
+      --   end
+      -- },
       {"nvim-treesitter/playground"},
       {
         "phaazon/hop.nvim", -- autojump
@@ -255,8 +264,17 @@ local config = {
       c.options.show_close_icon = false
       c.options.separator_style = "slant"
       c.options.tab_size = 30
-      c.options.max_name_length = 24
-      return c
+      c.options.diagnostics = "nvim_lsp"
+      c.options.diagnostics_indicator = function(count, level, diagnostics_dict, context)
+        local icon = level:match("error") and " " or " "
+        return " " .. icon .. count
+      end
+      c.options.name_formatter = function(buf)  -- buf contains a "name", "path" and "bufnr"
+        return vim.fn.fnamemodify(buf.name, ':p:.')
+      end
+      c.options.max_name_length = 30
+      
+      return P(c)
     end,
     -- use mason-lspconfig to configure LSP installations
     ["mason-lspconfig"] = { -- overrides `require("mason-lspconfig").setup(...)`
