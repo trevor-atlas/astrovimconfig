@@ -1,7 +1,8 @@
 local Job = require("plenary.job")
 local myutils = require("user.utils")
-local ih = require("inlay-hints")
 local util = require 'lspconfig/util'
+
+
 
 local function getLogPath() return vim.lsp.get_log_path() end
 
@@ -41,7 +42,10 @@ end
 --[[ capabilities = require("cmp_nvim_lsp").update_capabilities(capabilities) ]]
 
 local on_attach = function(client, bufnr)
-  ih.on_attach(client, bufnr)
+  if myutils.is_available('inlay-hints.nvim') then
+    local ih = require("inlay-hints")
+    ih.on_attach(client, bufnr)
+  end
   vim.api.nvim_create_autocmd("CursorHold", {
     buffer = bufnr,
     callback = function()

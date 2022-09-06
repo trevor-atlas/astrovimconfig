@@ -30,6 +30,8 @@ function M.dirname(filepath)
   return result, is_changed
 end
 
+function M.is_available(plugin) return packer_plugins ~= nil and packer_plugins[plugin] ~= nil end
+
 function M.find_root_git_dir()
   local git_root = ""
   Job:new({

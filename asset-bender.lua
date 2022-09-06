@@ -89,7 +89,10 @@ end
 
 function M.check_start_javascript_lsp()
   log.info('Checking if we need to start a process')
-  if not is_hubspot_machine then return end
+  if not is_hubspot_machine then
+    log.info('Not a HubSpot machine. Skipping.')
+    return
+  end
   local bufnr = vim.api.nvim_get_current_buf()
 
   -- Filter which files we are considering.
